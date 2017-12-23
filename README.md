@@ -60,7 +60,7 @@ The database needs to be running before you continue, if you're running Windows:
 
 If you're running Linux:
 
-- Use the following [https://www.rethinkdb.com/docs/start-on-startup/](guide) to run RethinkDB as a process in the background, that way you will not have to worry about running it every single time.
+- Use the following [guide](https://www.rethinkdb.com/docs/start-on-startup/) to run RethinkDB as a process in the background, that way you will not have to worry about running it every single time.
 
 Once you've installed RethinkDB for your Operating System you will need to create the Database **guidebot** and Table **settings**
 
