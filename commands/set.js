@@ -17,7 +17,7 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
   // Retrieve current guild settings (merged) and overrides only.
   const settings = message.settings;
   const overrides = client.settings.get(message.guild.id);
-  
+
   // Edit an existing key value
   if (action === "edit") {
     // User must specify a key.
@@ -28,7 +28,7 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
     if (value.length < 1) return message.reply("Please specify a new value");
     // User must specify a different value than the current one.
     if (value.join(" ") === settings[key]) return message.reply("This setting already has that value!");
-    
+
     // If the guild does not have any overrides, initialize it.
     if (!client.settings.has(message.guild.id)) client.settings.set(message.guild.id, {});
 
@@ -38,13 +38,13 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
     // Confirm everything is fine!
     message.reply(`${key} successfully edited to ${value.join(" ")}`);
   } else
-  
+
   // Resets a key to the default value
   if (action === "reset") {
     if (!key) return message.reply("Please specify a key to reset.");
     if (!settings[key]) return message.reply("This key does not exist in the settings");
     if (!overrides[key]) return message.reply("This key does not have an override and is already using defaults.");
-    
+
     // Good demonstration of the custom awaitReply method in `./modules/functions.js` !
     const response = await client.awaitReply(message, `Are you sure you want to reset ${key} to the default value?`);
 
@@ -60,7 +60,7 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
       message.reply("Action cancelled.");
     }
   } else
-  
+
   if (action === "get") {
     if (!key) return message.reply("Please specify a key to view");
     if (!settings[key]) return message.reply("This key does not exist in the settings");

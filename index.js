@@ -11,6 +11,8 @@ const readdir = promisify(require("fs").readdir);
 const Enmap = require("enmap");
 const EnmapLevel = require("enmap-level");
 
+require('./util/extensions');
+
 // This is your client. Some people call it `bot`, some people call it `self`,
 // some might call it `cootchie`. Either way, when you see `client.something`,
 // or `bot.something`, this is what we're refering to. Your client.
@@ -50,7 +52,7 @@ const init = async () => {
   cmdFiles.forEach(f => {
     if (!f.endsWith(".js")) return;
     const response = client.loadCommand(f);
-    if (response) console.log(response);
+    if (response) client.logger.log(response);
   });
 
   // Then we load events, which will include our message and ready event.
