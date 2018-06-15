@@ -3,6 +3,10 @@
 // you.
 if (process.version.slice(1).split(".")[0] < 8) throw new Error("Node 8.0.0 or higher is required. Update Node on your system.");
 
+// This will make sure all of our relative paths actually work, even if we call the script
+// from another directory.
+process.chdir(__dirname);
+
 // Load up the discord.js library
 const Discord = require("discord.js");
 // We also load the rest of the things we need in this file:

@@ -1,33 +1,49 @@
 /*
-Logger class for easy and aesthetically pleasing console logging 
+Logger class for easy and aesthetically pleasing console logging
 */
 const chalk = require("chalk");
 const moment = require("moment");
+const winston = require("winston");
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.simple(),
+  transports: [
+    new winston.transports.File({ filename: '../../storage/logs/bot-error.log', level: 'error' }),
+    new winston.transports.File({ filename: '../../storage/logs/bot-combined.log' })
+  ]
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
 
 exports.log = (content, type = "log") => {
   const timestamp = `[${moment().format("YYYY-MM-DD HH:mm:ss")}]:`;
   switch (type) {
     case "log": {
-      return console.log(`${timestamp} ${chalk.bgBlue(type.toUpperCase())} ${content} `);
+      return logger.info(`${timestamp} ${chalk.bgBlue(type.toUpperCase())} ${content} `);
     }
     case "warn": {
-      return console.log(`${timestamp} ${chalk.black.bgYellow(type.toUpperCase())} ${content} `);
+      return logger.warn(`${timestamp} ${chalk.black.bgYellow(type.toUpperCase())} ${content} `);
     }
     case "error": {
-      return console.log(`${timestamp} ${chalk.bgRed(type.toUpperCase())} ${content} `);
+      return logger.error(`${timestamp} ${chalk.bgRed(type.toUpperCase())} ${content} `);
     }
     case "debug": {
-      return console.log(`${timestamp} ${chalk.green(type.toUpperCase())} ${content} `);
+      return logger.debug(`${timestamp} ${chalk.green(type.toUpperCase())} ${content} `);
     }
     case "cmd": {
-      return console.log(`${timestamp} ${chalk.black.bgWhite(type.toUpperCase())} ${content}`);
+      return logger.info(`${timestamp} ${chalk.black.bgWhite(type.toUpperCase())} ${content}`);
     }
     case "ready": {
-      return console.log(`${timestamp} ${chalk.black.bgGreen(type.toUpperCase())} ${content}`);
+      return logger.info(`${timestamp} ${chalk.black.bgGreen(type.toUpperCase())} ${content}`);
     }
     default: throw new TypeError("Logger type must be either warn, debug, log, ready, cmd or error.");
   }
-}; 
+};
 
 exports.error = (...args) => this.log(...args, "error");
 
