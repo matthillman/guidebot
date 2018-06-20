@@ -99,7 +99,7 @@ const counters = [
     },
     {
         name: "Nightsisters",
-        aliases: ['rjt', 'rey', 'rey jedi training'],
+        aliases: ['ns', 'talzin', 'asajj'],
         counters: [
             ["Troopers", "Veers, +4 of (Snowtrooper, Starck, Shoretrooper, Death Trooper, Stormtrooper)"],
             ["Wiggs, Lando, ROLO, SRP", "AoE Boom"],
