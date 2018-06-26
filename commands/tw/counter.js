@@ -14,10 +14,13 @@ exports.run = async (message, args) => {
 
     let output = `= TW Counters =\n`;
     matches.forEach((match) => {
-        const longest = match.counters.reduce((long, counters) => Math.max(long, counters.first().length), 0);
         output += `\u200b\n== Counters for ${match.name} ==\n`;
         match.counters.forEach((counter) => {
-            output += `${counter.first()}${" ".repeat(longest - counter.first().length)} :: ${counter.last()}\n`;
+            output += `[${counter.first()}]`;
+            if (counter.last() && counter.last().length) {
+                output += `\n____\n${counter.last()}\n____\n`;
+            }
+            output += `\n`;
         });
         output += "\n";
     });
