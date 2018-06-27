@@ -150,7 +150,7 @@ const counters = [
         counters: [
             ["zJyn, Cassian, Leia, Chaze", ""],
             ["CLS", ""],
-            ["Nute, NA, Zombie", "🧀"],
+            ["Nute, NA, Zombie", "🧀\nOnly if there is no dispeller or AOE, so this is very specific"],
         ]
     },
     {
