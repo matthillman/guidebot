@@ -15,6 +15,9 @@ const readdir = promisify(require("fs").readdir);
 const Enmap = require("enmap");
 const EnmapLevel = require("enmap-level");
 
+const axios = require('axios');
+const https = require('https');
+
 require('./util/extensions');
 
 // This is your client. Some people call it `bot`, some people call it `self`,
@@ -47,7 +50,31 @@ client.settings = new Enmap({provider: new EnmapLevel({name: "settings"})});
 // We're doing real fancy node 8 async/await stuff here, and to do that
 // we need to wrap stuff in an anonymous function. It's annoying but it works.
 
+axios.defaults.baseURL = client.config.client.base_url;
+axios.defaults.headers.common['Accept'] = 'application/json';
+const agent = new https.Agent({
+  rejectUnauthorized: false
+});
+
+client.axios = axios;
+
+const initAPI = async () => {
+  try {
+    const response = await axios.post('/oauth/token', {
+      'grant_type': 'client_credentials',
+      'client_id': client.config.client.id,
+      'client_secret': client.config.client.secret,
+      'scope': client.config.client.scope,
+    }, { httpsAgent: agent });
+    axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+  } catch (error) {
+    client.logger.error(error);
+  }
+};
+
 const init = async () => {
+  await initAPI();
+  client.logger.log("Done with API init 👌");
 
   // Here we load **commands** into memory, as a collection, so they're accessible
   // here and everywhere else.

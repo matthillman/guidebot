@@ -1,4 +1,4 @@
-exports.run = async (message, args) => {
+exports.run = async (client, message, args) => {
     const query = args.join(' ').toLowerCase();
 
     const matches = args[0] ? counters.filter((squad) => {

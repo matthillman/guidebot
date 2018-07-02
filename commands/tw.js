@@ -13,7 +13,7 @@ exports.run = async (client, message, [command, ...args]) => {
   if (command == "help") {
     cmd.run(CMD.commands, message, args);
   } else {
-    cmd.run(message, args);
+    cmd.run(client, message, args);
   }
 };
 
