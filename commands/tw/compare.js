@@ -15,7 +15,7 @@ const queryGuilds = async (client, guild1, guild2) => {
 
 exports.run = async (client, message, args) => {
 
-    const waitingMessage = await message.channel.send("Querying");
+    const waitingMessage = await message.channel.send("Querying " + args.join(' vs '));
 
     await waitingMessage.react('⏳');
 
