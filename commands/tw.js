@@ -1,6 +1,6 @@
 const { CommandLoader } = require('../util/command-loader');
 
-const CMD = new CommandLoader;
+let CMD;
 
 exports.run = async (client, message, [command, ...args]) => {
   const cmd = CMD.get(command);
@@ -15,6 +15,11 @@ exports.run = async (client, message, [command, ...args]) => {
   } else {
     cmd.run(client, message, args);
   }
+};
+
+exports.init = async (client) => {
+  CMD = new CommandLoader(client);
+  CMD.loadFrom('tw/');
 };
 
 
@@ -32,4 +37,3 @@ exports.help = {
   usage: "tw [command] [options]"
 };
 
-CMD.loadFrom('tw/');

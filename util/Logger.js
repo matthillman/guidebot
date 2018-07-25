@@ -41,7 +41,7 @@ exports.log = (content, type = "log") => {
     case "ready": {
       return logger.info(`${timestamp} ${chalk.black.bgGreen(type.toUpperCase())} ${content}`);
     }
-    default: throw new TypeError("Logger type must be either warn, debug, log, ready, cmd or error.");
+    default: throw new TypeError(`Logger type must be either warn, debug, log, ready, cmd or error, got [${type}]`);
   }
 };
 

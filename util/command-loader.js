@@ -5,27 +5,29 @@ const { promisify } = require('util');
 const readdirAsync = promisify(readdir);
 
 class CommandLoader {
-    constructor() {
+
+    constructor(client) {
         this.commands = new Enmap();
         this.aliases = new Enmap();
+        this.client = client;
     }
 
     async loadFrom(path) {
         const cmdFiles = await readdirAsync(`./commands/${path}`);
         logger.log(`⮑ Loading a total of ${cmdFiles.length} sub-commands.`);
-        cmdFiles.forEach(f => {
-          if (!f.endsWith(".js")) return;
-          const response = this.loadCommand(path, f);
+        for (let f of cmdFiles) {
+          if (!f.endsWith(".js")) continue;
+          const response = await this.loadCommand(path, f);
           if (response) logger.log(response);
-        });
+        };
     }
 
-    loadCommand(path, commandName) {
+    async loadCommand(path, commandName) {
         try {
             const props = require(`../commands/${path}${commandName}`);
             logger.log(`Loading Command: ${path}${props.help.name}. 👌`);
             if (props.init) {
-                props.init();
+                await props.init(this.client);
             }
             this.commands.set(props.help.name, props);
             props.conf.aliases.forEach(alias => {

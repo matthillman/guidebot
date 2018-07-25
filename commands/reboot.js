@@ -3,6 +3,9 @@ exports.run = async (client, message, args, level) => {// eslint-disable-line no
   client.commands.forEach( async cmd => {
     await client.unloadCommand(cmd);
   });
+
+  await client.pool.end()
+  client.logger.log('pool has ended');
   process.exit(1);
 };
 

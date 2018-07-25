@@ -18,6 +18,8 @@ const EnmapLevel = require("enmap-level");
 const axios = require('axios');
 const https = require('https');
 
+const { Pool } = require('pg');
+
 require('./util/extensions');
 
 // This is your client. Some people call it `bot`, some people call it `self`,
@@ -58,6 +60,10 @@ const agent = new https.Agent({
 
 client.axios = axios;
 
+const initDB = async() => {
+  client.pool = new Pool(client.config.db);
+}
+
 const initAPI = async () => {
   try {
     const response = await axios.post('/oauth/token', {
@@ -68,11 +74,13 @@ const initAPI = async () => {
     }, { httpsAgent: agent });
     axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
   } catch (error) {
-    client.logger.error(error);
+    client.logger.error(`🔥${error}`);
   }
 };
 
 const init = async () => {
+  await initDB();
+  client.logger.log("Done with DB init 👌");
   await initAPI();
   client.logger.log("Done with API init 👌");
 
@@ -80,11 +88,11 @@ const init = async () => {
   // here and everywhere else.
   const cmdFiles = await readdir("./commands/");
   client.logger.log(`Loading a total of ${cmdFiles.length} commands.`);
-  cmdFiles.forEach(f => {
-    if (!f.endsWith(".js")) return;
-    const response = client.loadCommand(f);
+  for (let f of cmdFiles) {
+    if (!f.endsWith(".js")) continue;
+    const response = await client.loadCommand(f);
     if (response) client.logger.log(response);
-  });
+  }
 
   // Then we load events, which will include our message and ready event.
   const evtFiles = await readdir("./events/");
