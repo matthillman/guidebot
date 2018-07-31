@@ -6,7 +6,9 @@ const schedules = new Enmap({provider: new EnmapLevel({name: "schedules"})});
 exports.run = async (client, message, [raid, ...args]) => { // eslint-disable-line no-unused-vars
     const channelSchedules = schedules.get(message.channel.id);
     const adminLevel = client.levelCache["Administrator"];
-    if (raid === "add") {
+    const possibleCommand = (raid || '').toLowerCase();
+
+    if (possibleCommand === "add" || possibleCommand === "replace") {
         if (message.author.permLevel < adminLevel) return message.reply("You don't have permission to do this.");
         const realRaid = args.shift().toLowerCase();
         if (!realRaid) return message.reply("Please supply an event key to set.");
@@ -29,7 +31,16 @@ exports.run = async (client, message, [raid, ...args]) => { // eslint-disable-li
             command: args.join(' ')
         });
         return message.reply(`Event ${realRaid} added. You can only schedule this event from this channel`);
-    } else if (raid === "remove" || raid === "delete") {
+    } else
+    if (possibleCommand === "list" || possibleCommand === "help" || !raid) {
+        const configuredEvents = Object.keys(channelSchedules).sort();
+        let output = `= Events that can be called in ${message.channel.name} =\n`;
+        configuredEvents.forEach(event => {
+            output += `\u200b\n  * ${event}`;
+        });
+        message.channel.send(output, {code: "asciidoc", split: { char: "\u200b" }});
+    } else
+    if (possibleCommand === "remove" || possibleCommand === "delete") {
         if (message.author.permLevel < adminLevel) return message.reply("You don't have permission to do this.");
         const realRaid = args.shift().toLowerCase();
         if (!realRaid) return message.reply("Please supply a key to clear.");
@@ -44,18 +55,15 @@ exports.run = async (client, message, [raid, ...args]) => { // eslint-disable-li
             message.reply("I did nothing.");
           }
     } else {
-        if (!raid) return message.reply("You must provide an event to schedule.");
         if (!channelSchedules[raid]) return message.replay(`There is no event named "${raid} configured in this channel`);
 
         const event = channelSchedules[raid];
-
         const channel = client.channels.get(event.channel);
 
         if (!channel) return message.reply(`Can't find a channel named "${name}"`);
-
-        channel.send(event.command);
-
-        message.reply(`${raid} scheduled`);
+        const date = args.join(' ');
+        channel.send(`${event.command} ${date}`);
+        message.reply(`${raid} scheduled for ${date}`);
     }
 };
 
@@ -71,7 +79,7 @@ exports.help = {
     category: "Scheduling",
     description: "Echoes a pre-defined schedule creation message.",
     usage: `
-    schedule [event]
+    schedule [event] [date (eg. today or tomorrow)]
     schedule add [event] [channel] [command]
     schedule remove [event]
     `
