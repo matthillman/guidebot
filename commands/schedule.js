@@ -1,0 +1,78 @@
+const Enmap = require("enmap");
+const EnmapLevel = require("enmap-level");
+
+const schedules = new Enmap({provider: new EnmapLevel({name: "schedules"})});
+
+exports.run = async (client, message, [raid, ...args]) => { // eslint-disable-line no-unused-vars
+    const channelSchedules = schedules.get(message.channel.id);
+    const adminLevel = client.levelCache["Administrator"];
+    if (raid === "add") {
+        if (message.author.permLevel < adminLevel) return message.reply("You don't have permission to do this.");
+        const realRaid = args.shift().toLowerCase();
+        if (!realRaid) return message.reply("Please supply an event key to set.");
+        if (args.length < 2) return message.reply("Please specify a channel and a command.");
+
+        if (!schedules.has(message.channel.id)) schedules.set(message.channel.id, {});
+
+        const name = args.shift().replace(/^#/g, '');
+        let channel;
+        if (name.indexOf('<#') === 0) {
+            channel = message.guild.channels.get(name.replace(/^<#/, '').replace(/>$/, ''));
+        } else {
+            channel = message.guild.channels.find('name', name);
+        }
+
+        if (!channel) return message.reply(`Can't find a channel named "${name}"`);
+
+        schedules.setProp(message.channel.id, realRaid, {
+            channel: channel.id,
+            command: args.join(' ')
+        });
+        return message.reply(`Event ${realRaid} added. You can only schedule this event from this channel`);
+    } else if (raid === "remove" || raid === "delete") {
+        if (message.author.permLevel < adminLevel) return message.reply("You don't have permission to do this.");
+        const realRaid = args.shift().toLowerCase();
+        if (!realRaid) return message.reply("Please supply a key to clear.");
+        if (!schedules[realRaid]) return message.reply(`There is no event in this channel for ${realRaid}`);
+
+        const response = await client.awaitReply(message, `Are you sure you want to remove the event "${realRaid}"?`);
+        if (["y", "yes"].includes(response.toLowerCase())) {
+            delete channelSchedules[realRaid];
+            client.settings.set(message.channel.id, channelSchedules);
+            message.reply(`${realRaid} was successfully deleted.`);
+          } else if (["n","no","cancel"].includes(response)) {
+            message.reply("I did nothing.");
+          }
+    } else {
+        if (!raid) return message.reply("You must provide an event to schedule.");
+        if (!channelSchedules[raid]) return message.replay(`There is no event named "${raid} configured in this channel`);
+
+        const event = channelSchedules[raid];
+
+        const channel = client.channels.get(event.channel);
+
+        if (!channel) return message.reply(`Can't find a channel named "${name}"`);
+
+        channel.send(event.command);
+
+        message.reply(`${raid} scheduled`);
+    }
+};
+
+exports.conf = {
+    enabled: true,
+    guildOnly: false,
+    aliases: [],
+    permLevel: "User"
+};
+
+exports.help = {
+    name: "schedule",
+    category: "Scheduling",
+    description: "Echoes a pre-defined schedule creation message.",
+    usage: `
+    schedule [event]
+    schedule add [event] [channel] [command]
+    schedule remove [event]
+    `
+};
