@@ -5,7 +5,7 @@ const schedules = new Enmap({provider: new EnmapLevel({name: "schedules"})});
 
 exports.run = async (client, message, [raid, ...args]) => { // eslint-disable-line no-unused-vars
     const channelSchedules = schedules.get(message.channel.id);
-    const adminLevel = client.levelCache["Administrator"];
+    const adminLevel = client.levelCache["Moderator"];
     const possibleCommand = (raid || '').toLowerCase();
 
     if (possibleCommand === "add" || possibleCommand === "replace") {
