@@ -1,35 +1,70 @@
-
 const https = require('https');
 const queryGuilds = async (client, guild1, guild2) => {
     try {
-      const response = await client.axios.get(`/api/tw/compare/${guild1}/${guild2}`, {httpsAgent: new https.Agent({
-          rejectUnauthorized: false
-        })});
-      return response.data;
+        const response = await client.axios.get(`/api/tw/compare/${guild1}/${guild2}`, {
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false
+            })
+        });
+        return response.data;
     } catch (error) {
-      return {
-          error: error
-      };
+        return {
+            error: error
+        };
     }
-  };
+};
 
-exports.run = async (client, message, args) => {
+const scrapeGuild = async (client, id) => {
+    try {
+        const response = await client.axios.get(`/api/guild/scrape/${id}`, {
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false,
+            })
+        });
 
+        return response;
+    } catch (error) {
+        return { error };
+    }
+};
+
+const failed = [];
+
+const doQuery = async (client, message, args) => {
     const waitingMessage = await message.channel.send("Querying " + args.join(' vs '));
-
     await waitingMessage.react('⏳');
 
     const response = await queryGuilds(client, args.first(), args.last());
 
     await waitingMessage.react('🎉');
     await waitingMessage.delete();
-    console.warn(response);
-    if (response.error) {
-        message.reply(response.error);
-        return;
-    }
-    let msg = `= ${Object.keys(response).join(' vs ')} =\n`;
 
+    if (response.error) {
+        if (response[args.first()] || response[args.last()]) {
+            const needsScrape = response[args.first()] ? args.first() : args.last();
+
+            if (failed.indexOf(needsScrape) != -1) {
+                return await message.reply(`Querying guild ${needsScrape} has failed too many times. Please manually scrape this guild and try again`);
+            }
+
+            failed.push(needsScrape);
+            const scrapeMessage = await message.channel.send(`Guild ${needsScrape} needs to be scraped first…`);
+            await scrapeMessage.react('⏳');
+            await scrapeGuild(client, needsScrape);
+            await scrapeMessage.react('🎉');
+            await scrapeMessage.delete();
+
+            return await doQuery(client, message, args);
+        } else {
+            message.reply(response.error);
+            return;
+        }
+    }
+
+    failed.remove(args.first());
+    failed.remove(args.last());
+
+    let msg = `= ${Object.keys(response).join(' vs ')} =\n`;
     const g1Key = Object.keys(response).first();
     const g2Key = Object.keys(response).last();
     const winner = {};
@@ -50,8 +85,12 @@ exports.run = async (client, message, args) => {
         msg += `G 11+12 :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
     });
 
-    message.channel.send(msg, {code: 'asciidoc'});
+    message.channel.send(msg, {
+        code: 'asciidoc'
+    });
 };
+
+exports.run = doQuery;
 
 exports.conf = {
     enabled: true,
