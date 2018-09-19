@@ -56,6 +56,7 @@ const doQuery = async (client, message, args) => {
 
             return await doQuery(client, message, args);
         } else {
+            client.logger.log(response);
             message.reply(response.error);
             return;
         }
