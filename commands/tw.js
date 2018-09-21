@@ -36,7 +36,8 @@ exports.run = async (client, message, [command, ...args]) => {
 
 exports.init = async (client) => {
   CMD = new CommandLoader(client);
-  CMD.loadFrom('tw/');
+  await CMD.loadFrom('tw/');
+  client.logger.log(`Done Loading TW`);
 };
 
 

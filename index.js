@@ -88,17 +88,20 @@ const init = async () => {
   // here and everywhere else.
   const cmdFiles = await readdir("./commands/");
   client.logger.log(`Loading a total of ${cmdFiles.length} commands.`);
-  for (let f of cmdFiles) {
+  for (const f of cmdFiles) {
     if (!f.endsWith(".js")) continue;
     const response = await client.loadCommand(f);
     if (response) client.logger.log(response);
   }
+
+  client.logger.log(`Done with commands.`);
 
   // Then we load events, which will include our message and ready event.
   const evtFiles = await readdir("./events/");
   client.logger.log(`Loading a total of ${evtFiles.length} events.`);
   evtFiles.forEach(file => {
     const eventName = file.split(".")[0];
+    client.logger.log(`Loading Event: ${eventName}`);
     const event = require(`./events/${file}`);
     // This line is awesome by the way. Just sayin'.
     client.on(eventName, event.bind(null, client));
@@ -110,6 +113,7 @@ const init = async () => {
         break;
       }
     }
+    client.logger.log(`Done. 👌`);
   });
 
   // Generate a cache of client permissions for pretty perms
@@ -119,8 +123,10 @@ const init = async () => {
     client.levelCache[thisLevel.name] = thisLevel.level;
   }
 
+  client.logger.log(`Logging into discord`);
   // Here we login the client.
   client.login(client.config.token);
+  client.logger.log(`Init complete`);
 
 // End top-level async/await function.
 };

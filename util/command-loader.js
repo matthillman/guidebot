@@ -20,12 +20,13 @@ class CommandLoader {
           const response = await this.loadCommand(path, f);
           if (response) logger.log(response);
         }
+        logger.log(`Done loading sub-commands.`);
     }
 
     async loadCommand(path, commandName) {
         try {
             const props = require(`../commands/${path}${commandName}`);
-            logger.log(`Loading Command: ${path}${props.help.name}. 👌`);
+            logger.log(`Loading Command: ${path}${props.help.name}…`);
             if (props.init) {
                 await props.init(this.client);
             }
@@ -33,6 +34,7 @@ class CommandLoader {
             props.conf.aliases.forEach(alias => {
                 this.aliases.set(alias, props.help.name);
             });
+            logger.log(`Done. 👌`);
             return false;
         } catch (e) {
             return `Unable to load command ${commandName}: ${e}`;
