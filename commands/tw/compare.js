@@ -103,6 +103,6 @@ exports.conf = {
 exports.help = {
     name: "compare",
     category: "SWGOH",
-    description: "Compares the high level stats of two guilds. Note guild_id is the id from the URL in their swogh profile.",
+    description: "Compares the high level stats of two guilds. Note guild\_id is the id from the URL in their swogh profile.",
     usage: "compare [guild_id 1] [guild_id 2]"
 };

@@ -15,11 +15,11 @@ class CommandLoader {
     async loadFrom(path) {
         const cmdFiles = await readdirAsync(`./commands/${path}`);
         logger.log(`⮑ Loading a total of ${cmdFiles.length} sub-commands.`);
-        for (let f of cmdFiles) {
+        for (const f of cmdFiles) {
           if (!f.endsWith(".js")) continue;
           const response = await this.loadCommand(path, f);
           if (response) logger.log(response);
-        };
+        }
     }
 
     async loadCommand(path, commandName) {
