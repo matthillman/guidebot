@@ -14,8 +14,12 @@ const queryGuilds = async (client, guild1, guild2) => {
     }
 };
 
-const scrapeGuild = async (client, id) => {
+const scrapeGuild = async (client, id, callback) => {
     try {
+        client.guildQueue.push({
+            id,
+            callback,
+        });
         const response = await client.axios.get(`/api/guild/scrape/${id}`, {
             httpsAgent: new https.Agent({
                 rejectUnauthorized: false,
@@ -50,11 +54,13 @@ const doQuery = async (client, message, args) => {
             failed.push(needsScrape);
             const scrapeMessage = await message.channel.send(`Guild ${needsScrape} needs to be scraped first…`);
             await scrapeMessage.react('⏳');
-            await scrapeGuild(client, needsScrape);
-            await scrapeMessage.react('🎉');
-            await scrapeMessage.delete();
+            await scrapeGuild(client, needsScrape, async () => {
+                await scrapeMessage.react('🎉');
+                await scrapeMessage.delete();
 
-            return await doQuery(client, message, args);
+                return doQuery(client, message, args);
+            });
+            return;
         } else {
             client.logger.log(response);
             message.reply(response.error);

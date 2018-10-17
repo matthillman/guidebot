@@ -60,11 +60,11 @@ const agent = new https.Agent({
 
 client.axios = axios;
 
-const initDB = async() => {
+const initDB = async (client) => {
   client.pool = new Pool(client.config.db);
-}
+};
 
-const initAPI = async () => {
+const initAPI = async (client) => {
   try {
     const response = await axios.post('/oauth/token', {
       'grant_type': 'client_credentials',
@@ -78,11 +78,31 @@ const initAPI = async () => {
   }
 };
 
-const init = async () => {
-  await initDB();
+const RedisSubscriber = require('laravel-echo-server/dist/subscribers').RedisSubscriber;
+
+const initBroadcast = async (client) => {
+  const subscriber = new RedisSubscriber(require('../../laravel-echo-server.json'));
+  client.guildQueue = [];
+
+  await subscriber.subscribe((channel, message) => {
+    if (channel != 'private-guilds' || message.event != 'guild.fetched') { return ; }
+    client.guildQueue.forEach((listener, index) => {
+      if (listener.id == message.data.guild.guild_id) {
+        client.guildQueue.splice(index, 1);
+        listener.callback();
+      }
+    });
+  });
+
+};
+
+const init = async (client) => {
+  await initDB(client);
   client.logger.log("Done with DB init 👌");
-  await initAPI();
+  await initAPI(client);
   client.logger.log("Done with API init 👌");
+  await initBroadcast(client);
+  client.logger.log("Done with Broadcast Listener init 👌");
 
   // Here we load **commands** into memory, as a collection, so they're accessible
   // here and everywhere else.
@@ -131,4 +151,4 @@ const init = async () => {
 // End top-level async/await function.
 };
 
-init();
+init(client);
