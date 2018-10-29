@@ -92,9 +92,9 @@ const doQuery = async (client, message, args) => {
         msg += `G 11+12 :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
 
         decorator = winner.traya == key ? '**' : '';
-        msg += `Traya :: ${decorator}${response[key].traya}${decorator}\n`;
+        msg += `Traya   :: ${decorator}${response[key].traya}${decorator}\n`;
         decorator = winner.revan == key ? '**' : '';
-        msg += `Revan :: ${decorator}${response[key].revan}${decorator}\n`;
+        msg += `Revan   :: ${decorator}${response[key].revan}${decorator}\n`;
     });
 
     message.channel.send(msg, {
