@@ -75,7 +75,7 @@ const doQuery = async (client, message, args) => {
     const g1Key = Object.keys(response).first();
     const g2Key = Object.keys(response).last();
     const winner = {};
-    ['zetas', 'gear_12', 'gear_11'].forEach((key) => {
+    ['zetas', 'gear_12', 'gear_11', 'traya', 'revan'].forEach((key) => {
         winner[key] = +response[g1Key][key] > +response[g2Key][key] ? g1Key : g2Key;
     });
     winner['gear_11_12'] = (+response[g1Key]['gear_12'] + +response[g1Key]['gear_11']) > (+response[g2Key]['gear_12'] + +response[g2Key]['gear_11']) ? g1Key : g2Key;
@@ -90,6 +90,11 @@ const doQuery = async (client, message, args) => {
         msg += `Gear 11 :: ${decorator}${response[key].gear_11}${decorator}\n`;
         decorator = winner.gear_11_12 == key ? '**' : '';
         msg += `G 11+12 :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
+
+        decorator = winner.traya == key ? '**' : '';
+        msg += `Traya :: ${decorator}${response[key].traya}${decorator}\n`;
+        decorator = winner.revan == key ? '**' : '';
+        msg += `Revan :: ${decorator}${response[key].revan}${decorator}\n`;
     });
 
     message.channel.send(msg, {
