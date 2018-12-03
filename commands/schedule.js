@@ -33,6 +33,7 @@ exports.run = async (client, message, [raid, ...args]) => { // eslint-disable-li
         return message.reply(`Event ${realRaid} added. You can only schedule this event from this channel`);
     } else
     if (possibleCommand === "list" || possibleCommand === "help" || !raid) {
+        if (!channelSchedules) return message.replay(`There are no events configured in this channel`);
         const configuredEvents = Object.keys(channelSchedules).sort();
         let output = `= Events that can be called in ${message.channel.name} =\n`;
         configuredEvents.forEach(event => {
@@ -44,7 +45,7 @@ exports.run = async (client, message, [raid, ...args]) => { // eslint-disable-li
         if (message.author.permLevel < adminLevel) return message.reply("You don't have permission to do this.");
         const realRaid = args.shift().toLowerCase();
         if (!realRaid) return message.reply("Please supply a key to clear.");
-        if (!schedules[realRaid]) return message.reply(`There is no event in this channel for ${realRaid}`);
+        if (!channelSchedules[realRaid]) return message.reply(`There is no event in this channel for ${realRaid}`);
 
         const response = await client.awaitReply(message, `Are you sure you want to remove the event "${realRaid}"?`);
         if (["y", "yes"].includes(response.toLowerCase())) {
