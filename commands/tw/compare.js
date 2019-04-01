@@ -38,28 +38,45 @@ const doQuery = async (client, message, args) => {
     const waitingMessage = await message.channel.send("Querying " + args.join(' vs '));
     await waitingMessage.react('⏳');
 
-    const response = await queryGuilds(client, args.first(), args.last());
+    let response;
 
-    await waitingMessage.react('🎉');
-    await waitingMessage.delete();
+    if (args.first() == "--scrape") {
+        args.unshift();
+        response = {
+            error: true,
+            both: true,
+        };
+    } else {
+        response = await queryGuilds(client, args.first(), args.last());
+
+        await waitingMessage.react('🎉');
+        await waitingMessage.delete();
+    }
+
 
     if (response.error) {
-        if (response[args.first()] || response[args.last()]) {
-            const needsScrape = response[args.first()] ? args.first() : args.last();
+        if (response[args.first()] || response[args.last()] || response.both) {
+            const needsScrape = response.both ? args : response[args.first()] ? [args.first()] : [args.last()];
 
-            if (failed.indexOf(needsScrape) != -1) {
-                return await message.reply(`Querying guild ${needsScrape} has failed too many times. Please manually scrape this guild and try again`);
-            }
+            await needsScrape.forEach(async (scrape, index) => {
 
-            failed.push(needsScrape);
-            const scrapeMessage = await message.channel.send(`Guild ${needsScrape} needs to be scraped first…`);
-            await scrapeMessage.react('⏳');
-            await scrapeGuild(client, needsScrape, async () => {
-                await scrapeMessage.react('🎉');
-                await scrapeMessage.delete();
+                if (failed.indexOf(scrape) != -1) {
+                    return await message.reply(`Querying guild ${scrape} has failed too many times. Please manually scrape this guild and try again`);
+                }
 
-                return doQuery(client, message, args);
+                failed.push(scrape);
+                const scrapeMessage = await message.channel.send(`Guild ${scrape} needs to be scraped first…`);
+                await scrapeMessage.react('⏳');
+                await scrapeGuild(client, scrape, async () => {
+                    await scrapeMessage.react('🎉');
+                    await scrapeMessage.delete();
+
+                    if (index == needsScrape.length - 1) {
+                        return doQuery(client, message, args);
+                    }
+                });
             });
+
             return;
         } else {
             client.logger.log(response);
@@ -75,7 +92,7 @@ const doQuery = async (client, message, args) => {
     const g1Key = Object.keys(response).first();
     const g2Key = Object.keys(response).last();
     const winner = {};
-    ['zetas', 'gear_12', 'gear_11', 'traya', 'revan'].forEach((key) => {
+    ['zetas', 'gear_12', 'gear_11', 'traya', 'revan', 'darth_revan'].forEach((key) => {
         winner[key] = +response[g1Key][key] > +response[g2Key][key] ? g1Key : g2Key;
     });
     winner['gear_11_12'] = (+response[g1Key]['gear_12'] + +response[g1Key]['gear_11']) > (+response[g2Key]['gear_12'] + +response[g2Key]['gear_11']) ? g1Key : g2Key;
@@ -92,9 +109,11 @@ const doQuery = async (client, message, args) => {
         msg += `G 11+12 :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
 
         decorator = winner.traya == key ? '**' : '';
-        msg += `Traya   :: ${decorator}${response[key].traya}${decorator}\n`;
+        msg += `Traya   :: ${decorator}${response[key].traya} (${response[key].traya_12} G12)${decorator}\n`;
         decorator = winner.revan == key ? '**' : '';
-        msg += `Revan   :: ${decorator}${response[key].revan}${decorator}\n`;
+        msg += `Revan   :: ${decorator}${response[key].revan} (${response[key].revan_12} G12)${decorator}\n`;
+        decorator = winner.darth_revan == key ? '**' : '';
+        msg += `Revan   :: ${decorator}${response[key].darth_revan} (${response[key].darth_revan_12} G12)${decorator}\n`;
     });
 
     message.channel.send(msg, {
