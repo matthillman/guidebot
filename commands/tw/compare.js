@@ -92,28 +92,30 @@ const doQuery = async (client, message, args) => {
     const g1Key = Object.keys(response).first();
     const g2Key = Object.keys(response).last();
     const winner = {};
-    ['zetas', 'gear_12', 'gear_11', 'traya', 'revan', 'darth_revan'].forEach((key) => {
+    ['gp', 'zetas', 'gear_12', 'gear_11', 'traya', 'revan', 'darth_revan'].forEach((key) => {
         winner[key] = +response[g1Key][key] > +response[g2Key][key] ? g1Key : g2Key;
     });
     winner['gear_11_12'] = (+response[g1Key]['gear_12'] + +response[g1Key]['gear_11']) > (+response[g2Key]['gear_12'] + +response[g2Key]['gear_11']) ? g1Key : g2Key;
 
     Object.keys(response).forEach((key) => {
         msg += `\n== ${key} ==\n`;
-        let decorator = winner.zetas == key ? '**' : '';
-        msg += `Zetas   :: ${decorator}${response[key].zetas}${decorator}\n`;
+        let decorator = winner.gp == key ? '**' : '';
+        msg += `GP         :: ${decorator}${response[key].gp}${decorator}\n`;
+        decorator = winner.zetas == key ? '**' : '';
+        msg += `Zetas         :: ${decorator}${response[key].zetas}${decorator}\n`;
         decorator = winner.gear_12 == key ? '**' : '';
-        msg += `Gear 12 :: ${decorator}${response[key].gear_12}${decorator}\n`;
+        msg += `Gear 12       :: ${decorator}${response[key].gear_12}${decorator}\n`;
         decorator = winner.gear_11 == key ? '**' : '';
-        msg += `Gear 11 :: ${decorator}${response[key].gear_11}${decorator}\n`;
+        msg += `Gear 11       :: ${decorator}${response[key].gear_11}${decorator}\n`;
         decorator = winner.gear_11_12 == key ? '**' : '';
-        msg += `G 11+12 :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
+        msg += `G 11+12       :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
 
         decorator = winner.traya == key ? '**' : '';
-        msg += `Traya   :: ${decorator}${response[key].traya} (${response[key].traya_12} G12)${decorator}\n`;
+        msg += `Traya         :: ${decorator}${response[key].traya} (${response[key].traya_12} G12)${decorator}\n`;
         decorator = winner.revan == key ? '**' : '';
-        msg += `Revan   :: ${decorator}${response[key].revan} (${response[key].revan_12} G12)${decorator}\n`;
+        msg += `Revan         :: ${decorator}${response[key].revan} (${response[key].revan_12} G12)${decorator}\n`;
         decorator = winner.darth_revan == key ? '**' : '';
-        msg += `Revan   :: ${decorator}${response[key].darth_revan} (${response[key].darth_revan_12} G12)${decorator}\n`;
+        msg += `Darth Revan   :: ${decorator}${response[key].darth_revan} (${response[key].darth_revan_12} G12)${decorator}\n`;
     });
 
     message.channel.send(msg, {
