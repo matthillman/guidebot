@@ -100,22 +100,22 @@ const doQuery = async (client, message, args) => {
     Object.keys(response).forEach((key) => {
         msg += `\n== ${key} ==\n`;
         let decorator = winner.gp == key ? '**' : '';
-        msg += `GP         :: ${decorator}${response[key].gp}${decorator}\n`;
+        msg += `GP          :: ${decorator}${response[key].gp}${decorator}\n`;
         decorator = winner.zetas == key ? '**' : '';
-        msg += `Zetas         :: ${decorator}${response[key].zetas}${decorator}\n`;
+        msg += `Zetas       :: ${decorator}${response[key].zetas}${decorator}\n`;
         decorator = winner.gear_12 == key ? '**' : '';
-        msg += `Gear 12       :: ${decorator}${response[key].gear_12}${decorator}\n`;
+        msg += `Gear 12     :: ${decorator}${response[key].gear_12}${decorator}\n`;
         decorator = winner.gear_11 == key ? '**' : '';
-        msg += `Gear 11       :: ${decorator}${response[key].gear_11}${decorator}\n`;
+        msg += `Gear 11     :: ${decorator}${response[key].gear_11}${decorator}\n`;
         decorator = winner.gear_11_12 == key ? '**' : '';
-        msg += `G 11+12       :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
+        msg += `G 11+12     :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
 
         decorator = winner.traya == key ? '**' : '';
-        msg += `Traya         :: ${decorator}${response[key].traya} (${response[key].traya_12} G12)${decorator}\n`;
+        msg += `Traya       :: ${decorator}${response[key].traya} (${response[key].traya_12} G12)${decorator}\n`;
         decorator = winner.revan == key ? '**' : '';
-        msg += `Revan         :: ${decorator}${response[key].revan} (${response[key].revan_12} G12)${decorator}\n`;
+        msg += `Revan       :: ${decorator}${response[key].revan} (${response[key].revan_12} G12)${decorator}\n`;
         decorator = winner.darth_revan == key ? '**' : '';
-        msg += `Darth Revan   :: ${decorator}${response[key].darth_revan} (${response[key].darth_revan_12} G12)${decorator}\n`;
+        msg += `Darth Revan :: ${decorator}${response[key].darth_revan} (${response[key].darth_revan_12} G12)${decorator}\n`;
     });
 
     message.channel.send(msg, {
