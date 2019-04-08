@@ -39,15 +39,17 @@ const doQuery = async (client, message, args) => {
     await waitingMessage.react('⏳');
 
     let response;
+    let parsedArgs;
 
     if (args.first() == "--scrape") {
-        args.unshift();
+        parsedArgs = [args[1], args[2]];
         response = {
             error: true,
             both: true,
         };
     } else {
         response = await queryGuilds(client, args.first(), args.last());
+        parsedArgs = args;
 
         await waitingMessage.react('🎉');
         await waitingMessage.delete();
@@ -55,8 +57,8 @@ const doQuery = async (client, message, args) => {
 
 
     if (response.error) {
-        if (response[args.first()] || response[args.last()] || response.both) {
-            const needsScrape = response.both ? args : response[args.first()] ? [args.first()] : [args.last()];
+        if (response[parsedArgs.first()] || response[parsedArgs.last()] || response.both) {
+            const needsScrape = response.both ? parsedArgs : response[parsedArgs.first()] ? [parsedArgs.first()] : [parsedArgs.last()];
 
             await needsScrape.forEach(async (scrape, index) => {
 
@@ -72,14 +74,14 @@ const doQuery = async (client, message, args) => {
                     await scrapeMessage.delete();
 
                     if (index == needsScrape.length - 1) {
-                        return doQuery(client, message, args);
+                        return doQuery(client, message, parsedArgs);
                     }
                 });
             });
 
             return;
         } else {
-            client.logger.log(response);
+            client.logger.log(Object.values(response));
             message.reply(response.error);
             return;
         }
