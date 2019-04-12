@@ -52,9 +52,9 @@ const doQuery = async (client, message, args) => {
         parsedArgs = args;
 
         await waitingMessage.react('🎉');
-        await waitingMessage.delete();
     }
 
+    await waitingMessage.delete();
 
     if (response.error) {
         if (response[parsedArgs.first()] || response[parsedArgs.last()] || response.both) {
