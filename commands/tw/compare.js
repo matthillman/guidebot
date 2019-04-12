@@ -94,7 +94,9 @@ const doQuery = async (client, message, args) => {
     const g1Key = Object.keys(response).first();
     const g2Key = Object.keys(response).last();
     const winner = {};
-    ['gp', 'zetas', 'gear_12', 'gear_11', 'traya', 'revan', 'darth_revan'].forEach((key) => {
+    const charKeys = response.char_keys;
+    const charNames = response.char_names;
+    ['gp', 'zetas', 'gear_12', 'gear_11', ...charKeys].forEach((key) => {
         winner[key] = +response[g1Key][key] > +response[g2Key][key] ? g1Key : g2Key;
     });
     winner['gear_11_12'] = (+response[g1Key]['gear_12'] + +response[g1Key]['gear_11']) > (+response[g2Key]['gear_12'] + +response[g2Key]['gear_11']) ? g1Key : g2Key;
@@ -112,12 +114,10 @@ const doQuery = async (client, message, args) => {
         decorator = winner.gear_11_12 == key ? '**' : '';
         msg += `G 11+12     :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
 
-        decorator = winner.traya == key ? '**' : '';
-        msg += `Traya       :: ${decorator}${response[key].traya} (${response[key].traya_12} G12)${decorator}\n`;
-        decorator = winner.revan == key ? '**' : '';
-        msg += `Revan       :: ${decorator}${response[key].revan} (${response[key].revan_12} G12)${decorator}\n`;
-        decorator = winner.darth_revan == key ? '**' : '';
-        msg += `Darth Revan :: ${decorator}${response[key].darth_revan} (${response[key].darth_revan_12} G12)${decorator}\n`;
+        charKeys.forEach(key => {
+            decorator = winner[key] == key ? '**' : '';
+            msg += `${charNames[key]}       :: ${decorator}${response[key].traya} (${response[key][`${key}_12`]} G12)${decorator}\n`;
+        });
     });
 
     message.channel.send(msg, {
