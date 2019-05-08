@@ -90,33 +90,35 @@ const doQuery = async (client, message, args) => {
     failed.remove(args.first());
     failed.remove(args.last());
 
-    let msg = `= ${Object.keys(response).join(' vs ')} =\n`;
     const g1Key = Object.keys(response).first();
-    const g2Key = Object.keys(response).last();
+    const g2Key = Object.keys(response)[1];
+    let msg = `= ${[g1Key, g2Key].join(' vs ')} =\n`;
     const winner = {};
     const charKeys = response.char_keys;
     const charNames = response.char_names;
+	const longest = ['GP', 'Zetas', 'Gear 12', 'Gear 11', 'G 11+12', ...Object.values(charNames)].reduce((long, str) => Math.max(long, str.length), 0);
+	client.logger.log(`Longest is ${longest}`);
     ['gp', 'zetas', 'gear_12', 'gear_11', ...charKeys].forEach((key) => {
         winner[key] = +response[g1Key][key] > +response[g2Key][key] ? g1Key : g2Key;
     });
     winner['gear_11_12'] = (+response[g1Key]['gear_12'] + +response[g1Key]['gear_11']) > (+response[g2Key]['gear_12'] + +response[g2Key]['gear_11']) ? g1Key : g2Key;
 
-    Object.keys(response).forEach((key) => {
+    [g1Key, g2Key].forEach((key) => {
         msg += `\n== ${key} ==\n`;
         let decorator = winner.gp == key ? '**' : '';
-        msg += `GP          :: ${decorator}${response[key].gp}${decorator}\n`;
+        msg += `GP${" ".repeat(longest - "GP".length)} :: ${decorator}${response[key].gp}${decorator}\n`;
         decorator = winner.zetas == key ? '**' : '';
-        msg += `Zetas       :: ${decorator}${response[key].zetas}${decorator}\n`;
+        msg += `Zetas${" ".repeat(longest - "Zetas".length)} :: ${decorator}${response[key].zetas}${decorator}\n`;
         decorator = winner.gear_12 == key ? '**' : '';
-        msg += `Gear 12     :: ${decorator}${response[key].gear_12}${decorator}\n`;
+        msg += `Gear 12${" ".repeat(longest - "Gear 12".length)} :: ${decorator}${response[key].gear_12}${decorator}\n`;
         decorator = winner.gear_11 == key ? '**' : '';
-        msg += `Gear 11     :: ${decorator}${response[key].gear_11}${decorator}\n`;
+        msg += `Gear 11${" ".repeat(longest - "Gear 11".length)} :: ${decorator}${response[key].gear_11}${decorator}\n`;
         decorator = winner.gear_11_12 == key ? '**' : '';
-        msg += `G 11+12     :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
+        msg += `G 11+12${" ".repeat(longest - "G 11+12".length)} :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
 
-        charKeys.forEach(key => {
+        charKeys.forEach(char => {
             decorator = winner[key] == key ? '**' : '';
-            msg += `${charNames[key]}       :: ${decorator}${response[key].traya} (${response[key][`${key}_12`]} G12)${decorator}\n`;
+            msg += `${charNames[char]}${" ".repeat(longest - charNames[char].length)} :: ${decorator}${response[key][char]} (${response[key][`${char}_12`]} G12)${decorator}\n`;
         });
     });
 
