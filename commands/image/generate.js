@@ -1,18 +1,24 @@
 const { createCanvas, loadImage } = require('canvas');
 const { Attachment } = require('discord.js');
 
-exports.run = async (client, message, [baseImage, ...args]) => { // eslint-disable-line no-unused-vars
+exports.run = async (client, message, [baseImage, rightImage]) => { // eslint-disable-line no-unused-vars
     const channelConfig = client.imageChannels.get(message.guild.id);
     if (!channelConfig) message.reply(`You need to set up input/output channels before running generate`);
+
     const inputChannel = client.channels.get(channelConfig.input);
     const outputChannel = client.channels.get(channelConfig.output);
 
-    if (!inputChannel) return message.reply(`Can't find input channel "${channelConfig.input}, please make sure you've set it up with *image register input*"`);
+    if (!rightImage && !inputChannel) return message.reply(`Can't find input channel "${channelConfig.input}, please make sure you've set it up with *image register input*"`);
     if (!outputChannel) return message.reply(`Can't find output channel "${channelConfig.output}", please make sure you've set it up with *image register output*`);
 
-    const inputMessages = await inputChannel.fetchMessages();
-    const inputURLs = inputMessages.array().reduce((acc, m) => acc.concat(m.attachments.map(a => a.url)), []);
-    const baseIMG = await loadImage(baseImage);
+    let inputURLs = [];
+    if (rightImage) {
+        inputURLs = [baseImage];
+    } else {
+        const inputMessages = await inputChannel.fetchMessages();
+        inputURLs = inputMessages.array().reduce((acc, m) => acc.concat(m.attachments.map(a => a.url)), []);
+    }
+    const baseIMG = await loadImage(rightImage || baseImage);
 
     await inputURLs.forEach(async flairURL => {
         const flairIMG = await loadImage(flairURL);
