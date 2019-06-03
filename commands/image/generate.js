@@ -12,10 +12,10 @@ exports.run = async (client, message, [baseImage, rightImage]) => { // eslint-di
     if (!outputChannel) return message.reply(`Can't find output channel "${channelConfig.output}", please make sure you've set it up with *image register output*`);
 
     let inputURLs = [];
-    if (rightImage) {
+    if (rightImage && validURL(baseImage)) {
         inputURLs = [baseImage];
     } else {
-        const inputMessages = await inputChannel.fetchMessages();
+        const inputMessages = await inputChannel.fetchMessages({ limit: (validURL(baseImage) ? 50 : +baseImage) });
         inputURLs = inputMessages.array().reduce((acc, m) => acc.concat(m.attachments.map(a => a.url)), []);
     }
     const baseIMG = await loadImage(rightImage || baseImage);
@@ -53,3 +53,13 @@ exports.help = {
     image generate [base image URL]
     `
 };
+
+function validURL(str) {
+    var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+      '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+      '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+      '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+    return !!pattern.test(str);
+  }
