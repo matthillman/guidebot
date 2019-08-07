@@ -1,4 +1,10 @@
 const https = require('https');
+const OPEN_EMPHASIS = '*';
+const CLOSE_EMPHASIS = '*';
+const formatGP = (gp) => {
+    return `${(gp / 1000000).toFixed(1)}M`;
+};
+
 const queryGuilds = async (client, guild1, guild2) => {
     try {
         const response = await client.axios.get(`/api/tw/compare/${guild1}/${guild2}`, {
@@ -92,41 +98,83 @@ const doQuery = async (client, message, args) => {
 
     const g1Key = Object.keys(response).first();
     const g2Key = Object.keys(response)[1];
-    let msg = `= ${[g1Key, g2Key].join(' vs ')} =\n`;
-    const winner = {};
+    const msg = `= ${[g1Key, g2Key].join(' vs ')} =`;
+
     const charKeys = response.char_keys;
     const charNames = response.char_names;
-	const longest = ['GP', 'Zetas', 'Gear 13', 'Gear 12', 'Gear 11', 'G 11+', ...Object.values(charNames)].reduce((long, str) => Math.max(long, str.length), 0);
+    const modKeys = response.mod_keys;
+
+    const winner = {};
+	const longest = ['Members', 'GP', 'Zetas', 'Gear 13', 'Gear 12', 'Gear 11', 'G 11+'].reduce((long, str) => Math.max(long, str.length), 0);
 	client.logger.log(`Longest is ${longest}`);
-    ['gp', 'zetas', 'gear_13', 'gear_12', 'gear_11', ...charKeys].forEach((key) => {
+    ['gp', 'zetas', 'gear_13', 'gear_12', 'gear_11'].forEach(key => {
         winner[key] = +response[g1Key][key] > +response[g2Key][key] ? g1Key : g2Key;
+    });
+    Object.keys(modKeys).forEach(key => {
+        winner[key] = +response[g1Key].mods[key] > +response[g2Key].mods[key] ? g1Key : g2Key;
     });
     winner['gear_11_12'] = (+response[g1Key]['gear_13'] + +response[g1Key]['gear_12'] + +response[g1Key]['gear_11']) > (+response[g2Key]['gear_13'] + +response[g2Key]['gear_12'] + +response[g2Key]['gear_11']) ? g1Key : g2Key;
 
-    [g1Key, g2Key].forEach((key) => {
-        msg += `\n== ${key} ==\n`;
-        let decorator = winner.gp == key ? '**' : '';
-        msg += `GP${" ".repeat(longest - "GP".length)} :: ${decorator}${response[key].gp}${decorator}\n`;
-        decorator = winner.zetas == key ? '**' : '';
-        msg += `Zetas${" ".repeat(longest - "Zetas".length)} :: ${decorator}${response[key].zetas}${decorator}\n`;
-        decorator = winner.gear_13 == key ? '**' : '';
-        msg += `Gear 13${" ".repeat(longest - "Gear 13".length)} :: ${decorator}${response[key].gear_13}${decorator}\n`;
-        decorator = winner.gear_12 == key ? '**' : '';
-        msg += `Gear 12${" ".repeat(longest - "Gear 12".length)} :: ${decorator}${response[key].gear_12}${decorator}\n`;
-        decorator = winner.gear_11 == key ? '**' : '';
-        msg += `Gear 11${" ".repeat(longest - "Gear 11".length)} :: ${decorator}${response[key].gear_11}${decorator}\n`;
-        decorator = winner.gear_11_12 == key ? '**' : '';
-        msg += `G 11+${" ".repeat(longest - "G 11+".length)} :: ${decorator}${response[key].gear_12 + response[key].gear_11}${decorator}\n`;
+    const gpFields = [g1Key, g2Key].map((key) => {
+        const name = `${key}`;
+        let value = `\`\`\`asciidoc\n`;
+        value += `Members${" ".repeat(longest - "Members".length)} :: ${response[key].member_count}\n`;
+        value += `GP${" ".repeat(longest - "GP".length)} :: ${winner.gp == key ? OPEN_EMPHASIS : ''}${formatGP(response[key].gp)}${winner.gp == key ? CLOSE_EMPHASIS : ''}\n`;
+        value += `Zetas${" ".repeat(longest - "Zetas".length)} :: ${winner.zetas == key ? OPEN_EMPHASIS : ''}${response[key].zetas}${winner.zetas == key ? CLOSE_EMPHASIS : ''}\n`;
+        value += `Gear 13${" ".repeat(longest - "Gear 13".length)} :: ${winner.gear_13 == key ? OPEN_EMPHASIS : ''}${response[key].gear_13}${winner.gear_13 == key ? CLOSE_EMPHASIS : ''}\n`;
+        value += `Gear 12${" ".repeat(longest - "Gear 12".length)} :: ${winner.gear_12 == key ? OPEN_EMPHASIS : ''}${response[key].gear_12}${winner.gear_12 == key ? CLOSE_EMPHASIS : ''}\n`;
+        value += `Gear 11${" ".repeat(longest - "Gear 11".length)} :: ${winner.gear_11 == key ? OPEN_EMPHASIS : ''}${response[key].gear_11}${winner.gear_11 == key ? CLOSE_EMPHASIS : ''}\n`;
+        value += `G 11+${" ".repeat(longest - "G 11+".length)} :: ${winner.gear_11_12 == key ? OPEN_EMPHASIS : ''}${response[key].gear_13 + response[key].gear_12 + response[key].gear_11}${winner.gear_11_12 == key ? CLOSE_EMPHASIS : ''}\n`;
+        value +=`\`\`\``;
 
-        charKeys.forEach(char => {
-            decorator = winner[key] == key ? '**' : '';
-            msg += `${charNames[char]}${" ".repeat(longest - charNames[char].length)} :: ${decorator}${response[key][char]} (${response[key][`${char}_13`]} G13, ${response[key][`${char}_12`]} G12)${decorator}\n`;
+        return { name, value, inline: true };
+    });
+	const longestMod = Object.values(modKeys).reduce((long, str) => Math.max(long, str.length), 0);
+    const modFields = [g1Key, g2Key].map((key) => {
+        const name = `${key}`;
+        const guildMods = response[key].mods;
+        let value = `\`\`\`asciidoc\n`;
+        Object.keys(modKeys).forEach(mod => {
+            value += `${modKeys[mod]}${" ".repeat(longestMod - modKeys[mod].length)} :: ${winner[mod] == key ? OPEN_EMPHASIS : ''}${guildMods[mod]}${winner[mod] == key ? CLOSE_EMPHASIS : ''}\n`;
         });
+        value +=`\`\`\``;
+
+        return { name, value, inline: true };
     });
 
-    message.channel.send(msg, {
-        code: 'asciidoc'
+	const longestChar = Object.values(charNames).reduce((long, str) => Math.max(long, str.length), 0);
+    const charFields = [g1Key, g2Key].map((key) => {
+        const name = `${key}`;
+        let value = `\`\`\`asciidoc\n`;
+        charKeys.forEach(char => {
+            value += `${charNames[char]}${" ".repeat(longestChar - charNames[char].length)} :: ${response[key][char]} (${response[key][`${char}_13`]} G13, ${response[key][`${char}_12`]} G12)\n`;
+        });
+        value +=`\`\`\``;
+
+        return { name, value, inline: true };
     });
+
+    message.channel.send({embed: {
+        author: { name: msg },
+        color: 0xfce34d,
+        url: 'https://schwartz.hillman.me/home',
+        thumbnail: {
+            url: 'https://schwartz.hillman.me/images/Logo@2x.png',
+        },
+        description: `Fuckin' kill 'em`,
+        fields: [].concat.apply([], [
+            gpFields,
+            { value: '```asciidoc\n= Mods =\n```', name: '\u200b' },
+            modFields,
+            { value: '```asciidoc\n= Characters =\n```', name: '\u200b' },
+            charFields
+        ]),
+        timestamp: new Date(),
+        footer: {
+            text: 'May the Schwartz be with you',
+            icon_url: 'https://schwartz.hillman.me/images/schwartz.jpg',
+        },
+    }});
 };
 
 exports.run = doQuery;
