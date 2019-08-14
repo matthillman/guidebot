@@ -154,7 +154,7 @@ const doQuery = async (client, message, args) => {
         return { name, value, inline: true };
     });
 
-    message.channel.send({embed: {
+    await message.channel.send({embed: {
         author: { name: msg },
         color: 0xfce34d,
         url: 'https://schwartz.hillman.me/home',
