@@ -5,6 +5,14 @@ const formatGP = (gp) => {
     return `${(gp / 1000000).toFixed(1)}M`;
 };
 
+const docBlock = (lines) => {
+    let value = `\`\`\`asciidoc\n`;
+    value += lines.join('\n');
+    value +=`\`\`\``;
+
+    return value;
+};
+
 const queryGuilds = async (client, guild1, guild2) => {
     try {
         const response = await client.axios.get(`/api/tw/compare/${guild1}/${guild2}`, {
@@ -117,15 +125,15 @@ const doQuery = async (client, message, args) => {
 
     const gpFields = [g1Key, g2Key].map((key) => {
         const name = `${key}`;
-        let value = `\`\`\`asciidoc\n`;
-        value += `Members${" ".repeat(longest - "Members".length)} :: ${response[key].member_count}\n`;
-        value += `GP${" ".repeat(longest - "GP".length)} :: ${winner.gp == key ? OPEN_EMPHASIS : ''}${formatGP(response[key].gp)}${winner.gp == key ? CLOSE_EMPHASIS : ''}\n`;
-        value += `Zetas${" ".repeat(longest - "Zetas".length)} :: ${winner.zetas == key ? OPEN_EMPHASIS : ''}${response[key].zetas}${winner.zetas == key ? CLOSE_EMPHASIS : ''}\n`;
-        value += `Gear 13${" ".repeat(longest - "Gear 13".length)} :: ${winner.gear_13 == key ? OPEN_EMPHASIS : ''}${response[key].gear_13}${winner.gear_13 == key ? CLOSE_EMPHASIS : ''}\n`;
-        value += `Gear 12${" ".repeat(longest - "Gear 12".length)} :: ${winner.gear_12 == key ? OPEN_EMPHASIS : ''}${response[key].gear_12}${winner.gear_12 == key ? CLOSE_EMPHASIS : ''}\n`;
-        value += `Gear 11${" ".repeat(longest - "Gear 11".length)} :: ${winner.gear_11 == key ? OPEN_EMPHASIS : ''}${response[key].gear_11}${winner.gear_11 == key ? CLOSE_EMPHASIS : ''}\n`;
-        value += `G 11+${" ".repeat(longest - "G 11+".length)} :: ${winner.gear_11_12 == key ? OPEN_EMPHASIS : ''}${response[key].gear_13 + response[key].gear_12 + response[key].gear_11}${winner.gear_11_12 == key ? CLOSE_EMPHASIS : ''}\n`;
-        value +=`\`\`\``;
+        const value = docBlock([
+            `Members${" ".repeat(longest - "Members".length)} :: ${response[key].member_count}`,
+            `GP${" ".repeat(longest - "GP".length)} :: ${winner.gp == key ? OPEN_EMPHASIS : ''}${formatGP(response[key].gp)}${winner.gp == key ? CLOSE_EMPHASIS : ''}`,
+            `Zetas${" ".repeat(longest - "Zetas".length)} :: ${winner.zetas == key ? OPEN_EMPHASIS : ''}${response[key].zetas}${winner.zetas == key ? CLOSE_EMPHASIS : ''}`,
+            `Gear 13${" ".repeat(longest - "Gear 13".length)} :: ${winner.gear_13 == key ? OPEN_EMPHASIS : ''}${response[key].gear_13}${winner.gear_13 == key ? CLOSE_EMPHASIS : ''}`,
+            `Gear 12${" ".repeat(longest - "Gear 12".length)} :: ${winner.gear_12 == key ? OPEN_EMPHASIS : ''}${response[key].gear_12}${winner.gear_12 == key ? CLOSE_EMPHASIS : ''}`,
+            `Gear 11${" ".repeat(longest - "Gear 11".length)} :: ${winner.gear_11 == key ? OPEN_EMPHASIS : ''}${response[key].gear_11}${winner.gear_11 == key ? CLOSE_EMPHASIS : ''}`,
+            `G 11+${" ".repeat(longest - "G 11+".length)} :: ${winner.gear_11_12 == key ? OPEN_EMPHASIS : ''}${response[key].gear_13 + response[key].gear_12 + response[key].gear_11}${winner.gear_11_12 == key ? CLOSE_EMPHASIS : ''}`,
+        ]);
 
         return { name, value, inline: true };
     });
@@ -133,11 +141,11 @@ const doQuery = async (client, message, args) => {
     const modFields = [g1Key, g2Key].map((key) => {
         const name = `${key}`;
         const guildMods = response[key].mods;
-        let value = `\`\`\`asciidoc\n`;
-        Object.keys(modKeys).forEach(mod => {
-            value += `${modKeys[mod]}${" ".repeat(longestMod - modKeys[mod].length)} :: ${winner[mod] == key ? OPEN_EMPHASIS : ''}${guildMods[mod]}${winner[mod] == key ? CLOSE_EMPHASIS : ''}\n`;
-        });
-        value +=`\`\`\``;
+        const value = docBlock(
+            Object.keys(modKeys).map(mod => {
+                return `${modKeys[mod]}${" ".repeat(longestMod - modKeys[mod].length)} :: ${winner[mod] == key ? OPEN_EMPHASIS : ''}${guildMods[mod]}${winner[mod] == key ? CLOSE_EMPHASIS : ''}`;
+            })
+        );
 
         return { name, value, inline: true };
     });
@@ -145,11 +153,11 @@ const doQuery = async (client, message, args) => {
 	const longestChar = Object.values(charNames).reduce((long, str) => Math.max(long, str.length), 0);
     const charFields = [g1Key, g2Key].map((key) => {
         const name = `${key}`;
-        let value = `\`\`\`asciidoc\n`;
-        charKeys.forEach(char => {
-            value += `${charNames[char]}${" ".repeat(longestChar - charNames[char].length)} :: ${response[key][char]} (${response[key][`${char}_13`]} G13, ${response[key][`${char}_12`]} G12)\n`;
-        });
-        value +=`\`\`\``;
+        const value = docBlock(
+            charKeys.map(char => {
+                return `${charNames[char]}${" ".repeat(longestChar - charNames[char].length)} :: ${response[key][char]} (${response[key][`${char}_13`]} G13, ${response[key][`${char}_12`]} G12)`;
+            })
+        );
 
         return { name, value, inline: true };
     });
@@ -164,9 +172,9 @@ const doQuery = async (client, message, args) => {
         description: `Fuckin' kill 'em`,
         fields: [].concat.apply([], [
             gpFields,
-            { value: '```asciidoc\n= Mods =\n```', name: '\u200b' },
+            { value: docBlock('= Mods ='), name: '\u200b' },
             modFields,
-            { value: '```asciidoc\n= Characters =\n```', name: '\u200b' },
+            { value:  docBlock('= Characters ='), name: '\u200b' },
             charFields
         ]),
         timestamp: new Date(),
