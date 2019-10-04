@@ -105,9 +105,13 @@ const doIt = async (client, key) => {
         let sent = false;
         const embed = generateEmbed(data);
         if (payouts.hasProp(key, 'message')) {
-            const message = await channel.fetchMessage(channelData.message);
-            message.edit({ embed });
-            sent = true;
+            try {
+                const message = await channel.fetchMessage(channelData.message);
+                message.edit({ embed });
+                sent = true;
+            } catch (e) {
+                client.logger.error(`Error fetching payout message ${channelData.message}, sending new message`);
+            }
         }
         if (!sent) {
             const message = await channel.send({ embed });

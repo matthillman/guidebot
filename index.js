@@ -6,6 +6,7 @@ if (process.version.slice(1).split(".")[0] < 8) throw new Error("Node 8.0.0 or h
 // This will make sure all of our relative paths actually work, even if we call the script
 // from another directory.
 process.chdir(__dirname);
+global.__basedir = __dirname;
 
 // Load up the discord.js library
 const Discord = require("discord.js");
