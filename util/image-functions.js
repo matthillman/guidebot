@@ -1,4 +1,4 @@
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage, registerFont } = require('canvas');
 const fs = require('fs');
 
 const UNIT_DATA = {};
@@ -212,6 +212,8 @@ const init = async (client) => {
     });
 
     await db.end();
+
+    registerFont(`${__basedir}/util/avenir-light.otf`, { family: 'Avenir Light'});
 
     IMAGE_MAP.bg = await loadImage(`${__basedir}/util/bg2.jpg`);
     IMAGE_MAP['g11'] = await loadImage(`${__basedir}/../../public/images/units/gear/gear-icon-g11.png`);
