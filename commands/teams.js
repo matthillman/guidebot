@@ -23,7 +23,7 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
         return message.reply(`${team} is not a valid team key`);
     }
 
-    allyCode = allyCode.replace('-', '');
+    allyCode = allyCode.replace(/\-/g, '');
 
     if (!/^[0-9]{9}$/.test(allyCode)) {
         return message.reply(`${allyCode} does not appear to be a valid ally code`);
