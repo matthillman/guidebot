@@ -221,7 +221,7 @@ exports.init = async (client) => {
 
 exports.conf = {
     enabled: true,
-    guildOnly: true,
+    guildOnly: false,
     aliases: ['vs'],
     permLevel: "User"
 };

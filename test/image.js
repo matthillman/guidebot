@@ -1,6 +1,6 @@
 const { Pool } = require('pg');
 const config = require('../config');
-global.__basedir = `${__dirname}/..`;
+const __basedir = global.__basedir = `${__dirname}/..`;
 
 const { initImageFunctions, generateImage, writePNG } = require('../util/image-functions');
 
