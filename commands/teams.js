@@ -28,11 +28,13 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
     if (!/^[0-9]{9}$/.test(allyCode)) {
         return message.reply(`${allyCode} does not appear to be a valid ally code`);
     }
+    await message.react('⏳');
 
     const URL = `${client.config.client.base_url}/member/${allyCode}/${team}`;
 
     const buffer = await snapshot(URL);
 
+    await message.react('🎉');
     return message.channel.send(new Attachment(buffer, `${allyCode}.png`));
 };
 
