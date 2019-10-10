@@ -22,6 +22,7 @@ const getUserFromMention = async (client, mention) => {
 			mention = mention.slice(1);
 		}
 
+        client.logger.log(`Fetching user ${mention} from mention`);
 		return await client.fetchUser(mention);
 	}
 };
@@ -34,17 +35,21 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
 \`\`\``);
     }
 
+    team = team.toLowerCase();
+
     if (!teamList.map(team => team.value).includes(team)) {
         return message.reply(`${team} is not a valid team key`);
     }
 
-    allyCode = allyCode.replace(/\-/g, '');
+    if (allyCode) {
+        allyCode = allyCode.replace(/\-/g, '');
+    }
 
     let realAllyCode = null;
     if (/^[0-9]{9}$/.test(allyCode)) {
         realAllyCode = allyCode;
-    } else if (/^<@\d+>$/.test(allyCode) || allyCode === 'me') {
-        const user = allyCode === 'me' ? message.author : await getUserFromMention(client, allyCode);
+    } else if (/^<@.+>$/.test(allyCode) || allyCode === 'me' || !allyCode) {
+        const user = (!allyCode || allyCode === 'me') ? message.author : await getUserFromMention(client, allyCode);
         if (user) {
             const response = await client.axios.get(`/api/registration/${user.id}`, {
                 httpsAgent: new https.Agent({
@@ -52,10 +57,12 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
                 })
             });
             realAllyCode = response.data.get.filter(obj => obj.discordId === user.id).map(obj => obj.allyCode);
+            client.logger.log(`Got ally code ${JSON.stringify(realAllyCode)} from user ${user.id}`);
         }
     }
 
     if (realAllyCode === null) {
+        await message.react('🤔');
         return message.reply(`${allyCode} does not appear to be a valid ally code`);
     }
     await message.react('⏳');
