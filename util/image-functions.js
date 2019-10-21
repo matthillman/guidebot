@@ -4,6 +4,7 @@ const fs = require('fs');
 const UNIT_DATA = {};
 const IMAGE_MAP = {};
 const colorMap = ['#663399', '#eadb39', ['#0071d6', '#f70019'], ['#bfd5ff', '#ffcfd0']];
+const FULL_STROKE_THRESHOLD = 60;
 
 const roundRect = (ctx, x, y, w, h, radius) => {
     var r = x + w;
@@ -25,19 +26,19 @@ const roundRect = (ctx, x, y, w, h, radius) => {
 const shadowText = (ctx, text, x, y, size) => {
     ctx.save();
     ctx.fillStyle = '#262626';
-    ctx.font = `${size}px 'Avenir Light'`;
+    ctx.font = `${size}px Avenir`;
     ctx.fillText(text, x + 1, y + 2);
     ctx.restore();
 
     ctx.save();
-    ctx.font = `${size}px 'Avenir Light'`;
-    if (size > 25) {
+    ctx.font = `${size}px Avenir`;
+    if (size > FULL_STROKE_THRESHOLD) {
         ctx.fillText(text, x, y);
     }
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 1;
     ctx.strokeText(text, x, y);
-    if (size <= 25) {
+    if (size <= FULL_STROKE_THRESHOLD) {
         ctx.fillText(text, x, y);
     }
     ctx.restore();
@@ -126,7 +127,7 @@ const applyText = (canvas, text) => {
 
 	do {
 		// Assign the font to the context and decrement it so it can be measured again
-		ctx.font = `${fontSize -= 5}px 'Avenir Light'`;
+		ctx.font = `${fontSize -= 5}px Avenir`;
 		// Compare pixel width of the text to the canvas minus the approximate avatar size
 	} while (ctx.measureText(text).width > canvas.width);
 
@@ -213,7 +214,8 @@ const init = async (client) => {
 
     await db.end();
 
-    registerFont(`${__basedir}/util/avenir-light.otf`, { family: 'Avenir Light'});
+    registerFont(`${__basedir}/util/avenir-light.otf`, { family: Avenir});
+    registerFont(`${__basedir}/util/Avenir-Roman.ttf`, { family: 'Avenir'});
 
     IMAGE_MAP.bg = await loadImage(`${__basedir}/util/bg2.jpg`);
     IMAGE_MAP['g11'] = await loadImage(`${__basedir}/../../public/images/units/gear/gear-icon-g11.png`);
