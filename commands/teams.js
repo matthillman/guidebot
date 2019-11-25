@@ -4,6 +4,7 @@ const { Attachment } = require('discord.js');
 
 const teamList = [
     {label: 'General Skywalker', value: 'gs'},
+    {label: 'LS Geo TB', value: 'lsgeo'},
     {label: 'Geo TB', value: 'geo'},
     {label: 'TW', value: 'tw'},
     {label: 'Legendaries', value: 'legendary'},
