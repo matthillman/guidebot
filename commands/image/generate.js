@@ -35,14 +35,19 @@ exports.run = async (client, message, [baseImage, rightImage]) => { // eslint-di
             scaledHeight = flairIMG.height * baseIMG.width / flairIMG.width;
             scaledWidth = baseIMG.width;
             x = 0;
-            y = scaledHeight;
+            y = baseIMG.height;
         }
 
         const canvas = createCanvas(x + baseIMG.width, y + baseIMG.height);
         const ctx = canvas.getContext('2d');
 
-        ctx.drawImage(flairIMG, 0, 0, scaledWidth, scaledHeight);
-        ctx.drawImage(baseIMG, x, y, baseIMG.width, baseIMG.height);
+        if (flairIMG.height > flairIMG.width) {
+            ctx.drawImage(flairIMG, 0, 0, scaledWidth, scaledHeight);
+            ctx.drawImage(baseIMG, x, y, baseIMG.width, baseIMG.height);
+        } else {
+            ctx.drawImage(baseIMG, 0, 0, baseIMG.width, baseIMG.height);
+            ctx.drawImage(flairIMG, x, y, scaledWidth, scaledHeight);
+        }
 
         const attachment = new Attachment(canvas.toBuffer(), 'mcu-avengers.png');
 
