@@ -22,13 +22,27 @@ exports.run = async (client, message, [baseImage, rightImage]) => { // eslint-di
 
     await inputURLs.forEach(async flairURL => {
         const flairIMG = await loadImage(flairURL);
-        const scaledWidth = flairIMG.width * baseIMG.height / flairIMG.height;
+        let scaledWidth = 0;
+        let scaledHeight = 0;
+        let x = 0;
+        let y = 0;
+        if (flairIMG.height > flairIMG.width) {
+            scaledWidth = flairIMG.width * baseIMG.height / flairIMG.height;
+            scaledHeight = baseIMG.height;
+            x = scaledWidth;
+            y = 0;
+        } else {
+            scaledHeight = flairIMG.height * baseIMG.width / flairIMG.width;
+            scaledWidth = baseIMG.width;
+            x = 0;
+            y = scaledHeight;
+        }
 
-        const canvas = createCanvas(scaledWidth + baseIMG.width, baseIMG.height);
+        const canvas = createCanvas(x + baseIMG.width, y + baseIMG.height);
         const ctx = canvas.getContext('2d');
 
-        ctx.drawImage(flairIMG, 0, 0, scaledWidth, baseIMG.height);
-        ctx.drawImage(baseIMG, scaledWidth, 0, baseIMG.width, baseIMG.height);
+        ctx.drawImage(flairIMG, 0, 0, scaledWidth, scaledHeight);
+        ctx.drawImage(baseIMG, x, y, baseIMG.width, baseIMG.height);
 
         const attachment = new Attachment(canvas.toBuffer(), 'mcu-avengers.png');
 
