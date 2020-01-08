@@ -11,6 +11,22 @@ module.exports = (client, message) => {
   // If there is no guild, get default conf (DMs)
   const settings = message.settings = client.getGuildSettings(message.guild);
 
+  if (message.guild && client.recruitingChannels.has(message.guild.id)) {
+    const recruitingWatcherSettings = client.recruitingChannels.get(message.guild.id).info;
+
+    if (message.channel.id === recruitingWatcherSettings.channel) {
+      const matches = message.content.match(/swgoh.gg\/p\/([0-9]{9})/);
+
+      if (matches) {
+        const allyCode = matches[1];
+        const outChannel = message.guild.channels.get(recruitingWatcherSettings.outputChannel);
+        const profileCommand = recruitingWatcherSettings.command.replace(/%ally/gi, allyCode);
+
+        outChannel.send(`${profileCommand}`);
+      }
+    }
+  }
+
   // Also good practice to ignore any message that does not start with our prefix,
   // which is set in the configuration file.
   if (message.content.indexOf(settings.prefix) !== 0) return;
