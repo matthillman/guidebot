@@ -5,11 +5,14 @@ exports.run = async (client, message) => {
     await message.react('⏳');
 
     const URL = `${client.config.client.base_url}/poster`;
-    const buffer = await snapshot(URL);
-    await message.channel.send(new Attachment(buffer, `TheSchwartzies.png`));
+    try {
+        const buffer = await snapshot(URL);
+        await message.channel.send(new Attachment(buffer, `TheSchwartzies.png`));
 
-    await message.react('🎉');
-    return;
+        await message.react('🎉');
+    } catch (e) {
+        await message.reply('🤔 Something really bad happened.');
+    }
 };
 
 exports.conf = {

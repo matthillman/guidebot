@@ -1,6 +1,6 @@
 const https = require('https');
-const { snapshot } = require('../util/snapshot');
-const { Attachment } = require('discord.js');
+const { snapReplyForAllyCodes } = require('../util/snapshot');
+const { getUserFromMention } = require('../util/helpers');
 
 const teamList = [
     {label: 'General Skywalker', value: 'gs'},
@@ -12,21 +12,6 @@ const teamList = [
     {label: 'Hoth TB', value: 'tb'},
     {label: 'STR', value: 'str'},
 ];
-
-const getUserFromMention = async (client, mention) => {
-	if (!mention) return;
-
-	if (mention.startsWith('<@') && mention.endsWith('>')) {
-		mention = mention.slice(2, -1);
-
-		if (mention.startsWith('!')) {
-			mention = mention.slice(1);
-		}
-
-        client.logger.log(`Fetching user ${mention} from mention`);
-		return await client.fetchUser(mention);
-	}
-};
 
 exports.run = async (client, message, [team, allyCode]) => {
     if (!team) {
@@ -59,6 +44,14 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
             });
             realAllyCode = response.data.get.filter(obj => obj.discordId === user.id).map(obj => obj.allyCode);
             client.logger.log(`Got ally code ${JSON.stringify(realAllyCode)} from user ${user.id}`);
+
+            if (!realAllyCode.length) {
+                await message.react('🤔');
+                return message.reply(`"${user.username}" does not have an associated ally code. Register one with
+\`\`\`
+${message.settings.prefix}register {ally code}
+\`\`\``);
+            }
         }
     }
 
@@ -68,16 +61,7 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
     }
     await message.react('⏳');
 
-    if (!Array.isArray(realAllyCode)) {
-        realAllyCode = [realAllyCode];
-    }
-
-    for (const code of realAllyCode) {
-        const URL = `${client.config.client.base_url}/member/${code}/${team}`;
-        const buffer = await snapshot(URL);
-        await message.channel.send(new Attachment(buffer, `${code}.png`));
-    }
-
+    await snapReplyForAllyCodes(realAllyCode, 'member', message, client, `/${team}`);
     await message.react('🎉');
     return;
 };

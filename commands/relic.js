@@ -1,21 +1,7 @@
 const https = require('https');
-const { snapshot } = require('../util/snapshot');
+const { snapshot, snapReplyForAllyCodes } = require('../util/snapshot');
 const { Attachment } = require('discord.js');
-
-const getUserFromMention = async (client, mention) => {
-	if (!mention) return;
-
-	if (mention.startsWith('<@') && mention.endsWith('>')) {
-		mention = mention.slice(2, -1);
-
-		if (mention.startsWith('!')) {
-			mention = mention.slice(1);
-		}
-
-        client.logger.log(`Fetching user ${mention} from mention`);
-		return await client.fetchUser(mention);
-	}
-};
+const { getUserFromMention } = require('../util/helpers');
 
 exports.run = async (client, message, [allyCode]) => {
     if (allyCode) {
@@ -52,19 +38,15 @@ ${message.settings.prefix}register {ally code}
     await message.react('⏳');
 
     if (realAllyCode === null) {
-        const URL = `${client.config.client.base_url}/relics`;
-        const buffer = await snapshot(URL);
-        await message.channel.send(new Attachment(buffer, `relics.png`));
-    } else {
-        if (!Array.isArray(realAllyCode)) {
-            realAllyCode = [realAllyCode];
-        }
-
-        for (const code of realAllyCode) {
-            const URL = `${client.config.client.base_url}/relics/${code}`;
+        try {
+            const URL = `${client.config.client.base_url}/relics`;
             const buffer = await snapshot(URL);
-            await message.channel.send(new Attachment(buffer, `${code}.png`));
+            await message.channel.send(new Attachment(buffer, `relics.png`));
+        } catch (e) {
+            await message.reply(`Something really bad happened 🍺`);
         }
+    } else {
+        await snapReplyForAllyCodes(realAllyCode, 'relics', message, client);
     }
 
     await message.react('🎉');

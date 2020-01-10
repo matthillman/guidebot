@@ -1,38 +1,57 @@
-exports.run = async (client, message, [chanName, ...args]) => {
+const https = require('https');
+const { snapReplyForAllyCodes } = require('../util/snapshot');
+const { getUserFromMention } = require('../util/helpers');
 
-    const name = chanName.replace(/^#/g, '');
-    let channel;
-    if (name.indexOf('<#') === 0) {
-        channel = message.guild.channels.get(name.replace(/^<#/, '').replace(/>$/, ''));
-    } else {
-        channel = message.guild.channels.find('name', name);
+exports.run = async (client, message, [allyCode]) => {
+    if (allyCode) {
+        allyCode = allyCode.replace(/\-/g, '');
     }
 
-    if (!channel) return message.reply(`Can't find a channel named "${name}"`);
+    let realAllyCode = null;
+    if (/^[0-9]{9}$/.test(allyCode)) {
+        realAllyCode = allyCode;
+    } else if (/^<@.+>$/.test(allyCode) || allyCode === 'me' || !allyCode) {
+        const user = (!allyCode || allyCode === 'me') ? message.author : await getUserFromMention(client, allyCode);
+        if (user) {
+            const response = await client.axios.get(`/api/registration/${user.id}`, {
+                httpsAgent: new https.Agent({
+                    rejectUnauthorized: false
+                })
+            });
+            realAllyCode = response.data.get.filter(obj => obj.discordId === user.id).map(obj => obj.allyCode);
+            client.logger.log(`Got ally code ${JSON.stringify(realAllyCode)} from user ${user.id}`);
 
-    if (!client.recruitingChannels.has(message.guild.id)) client.recruitingChannels.set(message.guild.id, {});
+            if (!realAllyCode.length) {
+                await message.react('🤔');
+                return message.reply(`"${user.username}" does not have an associated ally code. Register one with
+\`\`\`
+${message.settings.prefix}register {ally code}
+\`\`\``);
+            }
+        }
+    } else if (allyCode) {
+        await message.react('🤔');
+        return message.reply(`${allyCode} does not appear to be a valid ally code`);
+    }
 
-    const recruitingProfileWatcher = {
-        channel: channel.id,
-        outputChannel: message.channel.id,
-        command: args.join(' '),
-    };
+    await message.react('⏳');
 
-    client.recruitingChannels.setProp(message.guild.id, 'info', recruitingProfileWatcher);
+    await snapReplyForAllyCodes(realAllyCode, 'member', message, client);
 
-    return message.reply(`Watcher set up.`);
+    await message.react('🎉');
+    return;
 };
 
 exports.conf = {
     enabled: true,
     guildOnly: false,
-    aliases: [],
+    aliases: ['pr'],
     permLevel: "User"
 };
 
 exports.help = {
     name: "profile",
     category: "SWGOH",
-    description: "Echos the command in *this* channel for any gg links found in the given channel. Use %ally for the ally code.",
-    usage: "profile <channel to watch> <command with %ally>"
+    description: "Shows a profile for the user. Pass ally code, 'me' or a mention",
+    usage: "profile [ally code?]"
 };

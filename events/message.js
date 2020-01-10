@@ -20,9 +20,12 @@ module.exports = (client, message) => {
       if (matches) {
         const allyCode = matches[1];
         const outChannel = message.guild.channels.get(recruitingWatcherSettings.outputChannel);
-        const profileCommand = recruitingWatcherSettings.command.replace(/%ally/gi, allyCode);
+        // const profileCommand = recruitingWatcherSettings.command.replace(/%ally/gi, allyCode);
+        const profileCommand = client.commands.get('profile');
 
-        outChannel.send(`${profileCommand}`);
+        outChannel.send(`Fetching profile for ${allyCode}…`).then(m => {
+          profileCommand.run(client, m, [allyCode]);
+        });
       }
     }
   }

@@ -48,8 +48,12 @@ const __basedir = global.__basedir = `${__dirname}/..`;
 
 const { snapshot } = require('../util/snapshot');
 const run = async () => {
-    const buffer = await snapshot(`https://schwartz.hillman.me/member/552325555/gs`);
-    fs.writeFileSync(`${__basedir}/test/test.png`, buffer);
+    try {
+        const buffer = await snapshot(`https://schwartz.dev/member/5523255554/gs`);
+        fs.writeFileSync(`${__basedir}/test/test.png`, buffer);
+    } catch (e) {
+        console.log(e.message == 404);
+    }
 };
 
 run();
