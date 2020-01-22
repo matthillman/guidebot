@@ -58,6 +58,7 @@ client.recruitingChannels = new Enmap({ provider: new EnmapLevel({ name: "recrui
 
 axios.defaults.baseURL = client.config.client.base_url;
 axios.defaults.headers.common['Accept'] = 'application/json';
+axios.defaults.headers.common['schwartz'] = 'bot';
 const agent = new https.Agent({
     rejectUnauthorized: false
 });
