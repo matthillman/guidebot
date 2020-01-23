@@ -6,6 +6,7 @@ const snapshot = async (url) => {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 800 });
+    await page.setExtraHTTPHeaders({ schwartz: 'bot' });
     const response = await page.goto(url);
     let result;
     if (response.ok()) {
