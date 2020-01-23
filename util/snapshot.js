@@ -10,6 +10,7 @@ const snapshot = async (url) => {
     const response = await page.goto(url);
     let result;
     if (response.ok()) {
+        await page.evaluateHandle('document.fonts.ready');
         const card = await page.$('.card');
         result = await card.screenshot();
     } else {
