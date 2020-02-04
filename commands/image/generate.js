@@ -35,7 +35,7 @@ exports.run = async (client, message, [baseImage, rightImage]) => { // eslint-di
             x = scaledWidth;
             y = 0;
             totalWidth = scaledWidth + baseIMG.width;
-            totalHeight = baseImage.height;
+            totalHeight = baseIMG.height;
         } else {
             scaledHeight = flairIMG.height * baseIMG.width / flairIMG.width;
             scaledWidth = baseIMG.width;
