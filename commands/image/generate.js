@@ -26,19 +26,26 @@ exports.run = async (client, message, [baseImage, rightImage]) => { // eslint-di
         let scaledHeight = 0;
         let x = 0;
         let y = 0;
+        let totalHeight = 0;
+        let totalWidth = 0;
+
         if (flairIMG.height > flairIMG.width) {
             scaledWidth = flairIMG.width * baseIMG.height / flairIMG.height;
             scaledHeight = baseIMG.height;
             x = scaledWidth;
             y = 0;
+            totalWidth = scaledWidth + baseIMG.width;
+            totalHeight = baseImage.height;
         } else {
             scaledHeight = flairIMG.height * baseIMG.width / flairIMG.width;
             scaledWidth = baseIMG.width;
             x = 0;
             y = baseIMG.height;
+            totalWidth = baseIMG.width;
+            totalHeight = baseImage.height + scaledHeight;
         }
 
-        const canvas = createCanvas(x + baseIMG.width, y + baseIMG.height);
+        const canvas = createCanvas(totalWidth, totalHeight);
         const ctx = canvas.getContext('2d');
 
         if (flairIMG.height > flairIMG.width) {
