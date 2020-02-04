@@ -42,7 +42,7 @@ exports.run = async (client, message, [baseImage, rightImage]) => { // eslint-di
             x = 0;
             y = baseIMG.height;
             totalWidth = baseIMG.width;
-            totalHeight = baseImage.height + scaledHeight;
+            totalHeight = baseIMG.height + scaledHeight;
         }
 
         const canvas = createCanvas(totalWidth, totalHeight);
