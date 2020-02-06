@@ -2,11 +2,14 @@
 const puppeteer = require('puppeteer');
 const { Attachment } = require('discord.js');
 
-const snapshot = async (url) => {
+const snapshot = async (url, authHeader = '') => {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 800 });
-    await page.setExtraHTTPHeaders({ schwartz: 'bot' });
+    await page.setExtraHTTPHeaders({
+        schwartz: 'bot',
+        Authorization: authHeader,
+    });
     const response = await page.goto(url);
     let result;
     if (response.ok()) {
@@ -62,8 +65,8 @@ const scrapeGuild = async (client, code, callback) => {
     }
 };
 
-const reallyDoSnap = async (URL, message, name) => {
-    const buffer = await snapshot(URL);
+const reallyDoSnap = async (URL, message, name, authHeader) => {
+    const buffer = await snapshot(URL, authHeader);
     await message.channel.send(new Attachment(buffer, `${name}.png`));
 };
 
@@ -77,7 +80,7 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix)
         const failIndex = failed.indexOf(code);
         const URL = `${client.config.client.base_url}/${urlSlug}/${code}${urlSuffix || ''}`;
         try {
-            await reallyDoSnap(URL, message, code);
+            await reallyDoSnap(URL, message, code, client.axios.defaults.headers.common['Authorization']);
 
             if (failIndex > -1) {
                 failed.slice(failIndex, 1);
@@ -104,12 +107,11 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix)
 };
 
 const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, urlSuffix) => {
-    const originalArgs = [].slice.call(arguments);
     const combinedID = `${guild1}vs${guild2}`;
     const failIndex = failed.indexOf(combinedID);
     const URL = `${client.config.client.base_url}/${urlSlug}/${guild1}/${guild2}${urlSuffix || ''}`;
     try {
-        await reallyDoSnap(URL, message, combinedID);
+        await reallyDoSnap(URL, message, combinedID, client.axios.defaults.headers.common['Authorization']);
 
         if (failIndex > -1) {
             failed.slice(failIndex, 1);
