@@ -1,4 +1,6 @@
 const { snapReplyForCompare, scrapeUser } = require('../util/snapshot');
+const { getUserFromMention } = require('../util/helpers');
+const https = require('https');
 
 exports.run = async (client, message, [scrape, ...allyCodes]) => {
     const doScrape = scrape == "--scrape" || scrape == "-s" || scrape == "—scrape";
@@ -29,7 +31,7 @@ exports.run = async (client, message, [scrape, ...allyCodes]) => {
 
                 if (!realAllyCode.length) {
                     await message.react('🤔');
-                    await message.reply(`"${user.username}" does not have an associated ally code. Please register one 😁`);
+                    await message.reply(`**${user.username}** does not have an associated ally code. Please register one 😁`);
                     allyCodeNotFound = true;
                     continue;
                 }
@@ -38,7 +40,8 @@ exports.run = async (client, message, [scrape, ...allyCodes]) => {
             }
         } else if (code) {
             await message.react('🤔');
-            await message.reply(`${code} does not appear to be a valid ally code 🤦🏻‍♂️`);
+            await message.reply(`**${code}** does not appear to be a valid ally code 🤦🏻‍♂️`);
+            allyCodeNotFound = true;
         }
     }
 
