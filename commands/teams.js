@@ -23,8 +23,12 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
 
     team = team.toLowerCase();
 
-    if (!teamList.map(team => team.value).includes(team)) {
+    if (!teamList.map(team => team.value).includes(team) || team !== 'mods') {
         return message.reply(`${team} is not a valid team key`);
+    }
+
+    if (team === 'mods') {
+        team = 'tw_mods';
     }
 
     if (allyCode) {
