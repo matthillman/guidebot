@@ -5,7 +5,7 @@ const { Attachment } = require('discord.js');
 const snapshot = async (url, authHeader = '') => {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
-    await page.setViewport({ width: 1200, height: 800 });
+    await page.setViewport({ width: 1200, height: 800, deviceScaleFactor: 2 });
     await page.setExtraHTTPHeaders({
         schwartz: 'bot',
         Authorization: authHeader,
@@ -49,7 +49,7 @@ const scrapeUser = async (client, code, callback) => {
 
 const scrapeGuild = async (client, code, callback) => {
     try {
-        client.userQueue.push({
+        client.guildQueue.push({
             code,
             callback,
         });
@@ -143,11 +143,54 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, urlS
             })
         });
     }
+};
 
+const snapReplyForCompare = async (codes, urlSlug, message, client, queryParameter) => {
+    if (!Array.isArray(codes)) {
+        codes = [codes];
+    }
+
+    const codeList = codes.join(',');
+    const failIndex = failed.indexOf(codeList);
+    const URL = `${client.config.client.base_url}/${urlSlug}?${queryParameter}=${codeList}`;
+    try {
+        await reallyDoSnap(URL, message, codes.join('_vs_'), client.axios.defaults.headers.common['Authorization']);
+
+        if (failIndex > -1) {
+            failed.slice(failIndex, 1);
+        }
+    } catch (e) {
+        client.logger.error(`Fetching page to snapshot failed with status "${e.message}" (${URL})`);
+        if (failIndex > -1) {
+            failed.slice(failIndex, 1);
+            await message.reply(`Querying has failed too many times. Please manually scrape these users and try again`);
+        }
+        failed.push(codeList);
+        client.logger.error(`Error getting snapshot for ${urlSlug} -> ${codeList}, trying to query`);
+        const scrapeMessage = await message.channel.send(`At least one of the ally codes needs to be scraped first…`);
+        await scrapeMessage.react('⏳');
+        let completeCount = 0;
+
+        codes.forEach(async code => {
+            await scrapeUser(client, code, async () => {
+                completeCount += 1;
+
+                if (codes.length == completeCount) {
+                    await scrapeMessage.react('🎉');
+                    await scrapeMessage.delete();
+
+                    await snapReplyForCompare(codes, urlSlug, message, client, queryParameter);
+                } else {
+                    await scrapeMessage.react('🍺');
+                }
+            })
+        });
+    }
 };
 
 exports.snapshot = snapshot;
 exports.snapReplyForAllyCodes = snapReplyForAllyCodes;
+exports.snapReplyForCompare = snapReplyForCompare;
 exports.snapReplyForGuilds = snapReplyForGuilds;
 exports.scrapeGuild = scrapeGuild;
 exports.scrapeUser = scrapeUser;
