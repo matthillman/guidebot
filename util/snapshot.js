@@ -47,13 +47,13 @@ const scrapeUser = async (client, code, callback) => {
     }
 };
 
-const scrapeGuild = async (client, code, callback) => {
+const scrapeGuild = async (client, guild, callback) => {
     try {
         client.guildQueue.push({
-            code,
+            guild,
             callback,
         });
-        const response = await client.axios.get(`/api/guild/scrape/${code}`, {
+        const response = await client.axios.get(`/api/guild/scrape/${guild}`, {
             httpsAgent: new https.Agent({
                 rejectUnauthorized: false,
             })
@@ -138,7 +138,7 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, urlS
 
                     await snapReplyForGuilds(guild1, guild2, `compare`, message, client);
                 } else {
-                    await scrapeMessage.react('⌛️');
+                    await scrapeMessage.react('🍺');
                 }
             })
         });

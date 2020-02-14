@@ -93,7 +93,7 @@ const initBroadcast = async (client) => {
     await subscriber.subscribe((channel, message) => {
         if (channel == 'private-guilds' && message.event == 'guild.fetched') {
             client.guildQueue.forEach((listener, index) => {
-                if (listener.id == message.data.guild.guild_id) {
+                if (listener.guild == message.data.guild.guild_id) {
                     client.guildQueue.splice(index, 1);
                     listener.callback();
                 }

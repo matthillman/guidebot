@@ -1,7 +1,7 @@
 const { snapReplyForGuilds, scrapeGuild } = require('../../util/snapshot');
 
 exports.run = async (client, message, [scrape, guild1, guild2]) => {
-    const doScrape = scrape == "--scrape" || scrape == "-s" || scrape == "—scrape";
+    const doScrape = scrape == "--scrape" || scrape == "-s" || scrape == "—scrape" || scrape == "-scrape";
 
     if (!doScrape) {
         guild2 = guild1;
@@ -42,7 +42,7 @@ exports.run = async (client, message, [scrape, guild1, guild2]) => {
 
                     await snapReplyForGuilds(guild1, guild2, `compare`, message, client);
                 } else {
-                    await scrapeMessage.react('⌛️');
+                    await scrapeMessage.react('🍺');
                 }
             })
         });

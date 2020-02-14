@@ -3,7 +3,7 @@ const { getUserFromMention } = require('../util/helpers');
 const https = require('https');
 
 exports.run = async (client, message, [scrape, ...allyCodes]) => {
-    const doScrape = scrape == "--scrape" || scrape == "-s" || scrape == "—scrape";
+    const doScrape = scrape == "--scrape" || scrape == "-s" || scrape == "—scrape" || scrape == "-scrape";
 
     if (!doScrape) {
         allyCodes.unshift(scrape);
@@ -70,7 +70,7 @@ exports.run = async (client, message, [scrape, ...allyCodes]) => {
 
                     await snapReplyForCompare(allyCodes, `member/compare`, message, client, 'members');
                 } else {
-                    await scrapeMessage.react('⌛️');
+                    await scrapeMessage.react('🍺');
                 }
             })
         });
