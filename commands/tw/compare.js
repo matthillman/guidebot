@@ -44,7 +44,7 @@ exports.run = async (client, message, [scrape, guild1, guild2]) => {
                 } else {
                     await scrapeMessage.react('🍺');
                 }
-            })
+            });
         });
     } else {
         await snapReplyForGuilds(guild1, guild2, `compare`, message, client);
