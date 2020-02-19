@@ -59,7 +59,6 @@ exports.run = async (client, message, [allyCode, ...charSearch]) => {
                     rejectUnauthorized: false
                 })
             });
-            console.warn(charResponse);
             const character = charResponse.data;
             await snapReplyForAllyCodes(character.id, 'member/mods', message, client);
         } catch (e) {

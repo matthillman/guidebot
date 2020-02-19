@@ -40,14 +40,14 @@ exports.run = async (client, message, [scrape, guild1, guild2]) => {
                     await scrapeMessage.react('🎉');
                     await scrapeMessage.delete();
 
-                    await snapReplyForGuilds(guild1, guild2, `compare`, message, client);
+                    await snapReplyForGuilds(guild1, guild2, `compare`, message, client, true);
                 } else {
                     await scrapeMessage.react('🍺');
                 }
             });
         });
     } else {
-        await snapReplyForGuilds(guild1, guild2, `compare`, message, client);
+        await snapReplyForGuilds(guild1, guild2, `compare`, message, client, true);
     }
 
     await message.react('🎉');

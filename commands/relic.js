@@ -40,7 +40,6 @@ ${message.settings.prefix}register {ally code}
     if (realAllyCode === null) {
         try {
             const URL = `${client.config.client.base_url}/relics`;
-            console.warn(client.axios.defaults.headers.common['Authorization']);
             const buffer = await snapshot(URL, client.axios.defaults.headers.common['Authorization']);
             await message.channel.send(new Attachment(buffer, `relics.png`));
         } catch (e) {

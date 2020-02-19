@@ -65,13 +65,32 @@ const scrapeGuild = async (client, guild, callback) => {
     }
 };
 
-const reallyDoSnap = async (URL, message, name, authHeader) => {
+const reallyDoSnap = async (URL, message, name, authHeader, embed) => {
     const buffer = await snapshot(URL, authHeader);
-    await message.channel.send(new Attachment(buffer, `${name}.png`));
+
+    if (embed) {
+        await message.channel.send({
+            files: [new Attachment(buffer, `${name}.png`)],
+            embed: {
+                title : `${name.replace(/_/g, ' ')}`,
+                color: 0xfce34d,
+                url: URL,
+                thumbnail: {
+                    url: 'https://schwartz.hillman.me/images/Logo@2x.png',
+                },
+                image: {
+                    url: `attachment://${name}.png`,
+                },
+            },
+        });
+    } else {
+        await message.channel.send(new Attachment(buffer, `${name}.png`));
+        await message.channel.send(`URL: ${URL}`);
+    }
 };
 
 const failed = [];
-const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix) => {
+const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix, asEmbed) => {
     if (!Array.isArray(codes)) {
         codes = [codes];
     }
@@ -80,7 +99,7 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix)
         const failIndex = failed.indexOf(code);
         const URL = `${client.config.client.base_url}/${urlSlug}/${code}${urlSuffix || ''}`;
         try {
-            await reallyDoSnap(URL, message, code, client.axios.defaults.headers.common['Authorization']);
+            await reallyDoSnap(URL, message, code, client.axios.defaults.headers.common['Authorization'], asEmbed);
 
             if (failIndex > -1) {
                 failed.slice(failIndex, 1);
@@ -106,12 +125,12 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix)
     }
 };
 
-const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, urlSuffix) => {
-    const combinedID = `${guild1}vs${guild2}`;
+const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, urlSuffix, asEmbed) => {
+    const combinedID = `${guild1}_vs_${guild2}`;
     const failIndex = failed.indexOf(combinedID);
     const URL = `${client.config.client.base_url}/${urlSlug}/${guild1}/${guild2}${urlSuffix || ''}`;
     try {
-        await reallyDoSnap(URL, message, combinedID, client.axios.defaults.headers.common['Authorization']);
+        await reallyDoSnap(URL, message, combinedID, client.axios.defaults.headers.common['Authorization'], asEmbed);
 
         if (failIndex > -1) {
             failed.slice(failIndex, 1);
@@ -140,12 +159,12 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, urlS
                 } else {
                     await scrapeMessage.react('🍺');
                 }
-            })
+            });
         });
     }
 };
 
-const snapReplyForCompare = async (codes, urlSlug, message, client, queryParameter) => {
+const snapReplyForCompare = async (codes, urlSlug, message, client, queryParameter, asEmbed) => {
     if (!Array.isArray(codes)) {
         codes = [codes];
     }
@@ -154,7 +173,7 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
     const failIndex = failed.indexOf(codeList);
     const URL = `${client.config.client.base_url}/${urlSlug}?${queryParameter}=${codeList}`;
     try {
-        await reallyDoSnap(URL, message, codes.join('_vs_'), client.axios.defaults.headers.common['Authorization']);
+        await reallyDoSnap(URL, message, codes.join('_vs_'), client.axios.defaults.headers.common['Authorization'], asEmbed);
 
         if (failIndex > -1) {
             failed.slice(failIndex, 1);
@@ -183,7 +202,7 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
                 } else {
                     await scrapeMessage.react('🍺');
                 }
-            })
+            });
         });
     }
 };

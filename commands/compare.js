@@ -13,7 +13,7 @@ exports.run = async (client, message, [scrape, ...allyCodes]) => {
 
     let allyCodeNotFound = false;
 
-    realCodes = [];
+    const realCodes = [];
 
     for (const code of allyCodes) {
         if (/^[0-9]{9}$/.test(code)) {
@@ -26,7 +26,7 @@ exports.run = async (client, message, [scrape, ...allyCodes]) => {
                         rejectUnauthorized: false
                     })
                 });
-                realAllyCode = response.data.get.filter(obj => obj.discordId === user.id).map(obj => obj.allyCode);
+                const realAllyCode = response.data.get.filter(obj => obj.discordId === user.id).map(obj => obj.allyCode);
                 client.logger.log(`Got ally code ${JSON.stringify(realAllyCode)} from user ${user.id}`);
 
                 if (!realAllyCode.length) {
@@ -68,14 +68,14 @@ exports.run = async (client, message, [scrape, ...allyCodes]) => {
                     await scrapeMessage.react('🎉');
                     await scrapeMessage.delete();
 
-                    await snapReplyForCompare(allyCodes, `member/compare`, message, client, 'members');
+                    await snapReplyForCompare(allyCodes, `member/compare`, message, client, 'members', true);
                 } else {
                     await scrapeMessage.react('🍺');
                 }
             })
         });
     } else {
-        await snapReplyForCompare(allyCodes, `member/compare`, message, client, 'members');
+        await snapReplyForCompare(allyCodes, `member/compare`, message, client, 'members', true);
     }
 
     await message.react('🎉');

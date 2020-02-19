@@ -65,7 +65,7 @@ exports.init = async (client) => {
             name: team.name,
             aliases: team.aliases.split(',').map(Function.prototype.call, String.prototype.trim),
             counters: teamCounters.rows.map(counter => [counter.name, counter.description])
-        }
+        };
     }));
 
     await db.end();
