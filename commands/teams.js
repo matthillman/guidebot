@@ -1,6 +1,6 @@
 const https = require('https');
 const { snapReplyForAllyCodes } = require('../util/snapshot');
-const { getUserFromMention } = require('../util/helpers');
+const { getUserFromMention, getAllyCodeForUser } = require('../util/helpers');
 
 const teamList = [
     {label: 'General Skywalker', value: 'gs'},
@@ -23,7 +23,7 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
 
     team = team.toLowerCase();
 
-    if (!teamList.map(team => team.value).includes(team) || team !== 'mods') {
+    if (!teamList.map(team => team.value).includes(team) && team !== 'mods') {
         return message.reply(`${team} is not a valid team key`);
     }
 
@@ -41,20 +41,9 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
     } else if (/^<@.+>$/.test(allyCode) || allyCode === 'me' || !allyCode) {
         const user = (!allyCode || allyCode === 'me') ? message.author : await getUserFromMention(client, allyCode);
         if (user) {
-            const response = await client.axios.get(`/api/registration/${user.id}`, {
-                httpsAgent: new https.Agent({
-                    rejectUnauthorized: false
-                })
-            });
-            realAllyCode = response.data.get.filter(obj => obj.discordId === user.id).map(obj => obj.allyCode);
-            client.logger.log(`Got ally code ${JSON.stringify(realAllyCode)} from user ${user.id}`);
-
-            if (!realAllyCode.length) {
-                await message.react('🤔');
-                return message.reply(`"${user.username}" does not have an associated ally code. Register one with
-\`\`\`
-${message.settings.prefix}register {ally code}
-\`\`\``);
+            realAllyCode = await getAllyCodeForUser(client, user, message);
+            if (!realAllyCode) {
+                return;
             }
         }
     }

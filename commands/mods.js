@@ -1,6 +1,6 @@
 const https = require('https');
 const { snapReplyForAllyCodes } = require('../util/snapshot');
-const { getUserFromMention } = require('../util/helpers');
+const { getUserFromMention, getAllyCodeForUser } = require('../util/helpers');
 
 exports.run = async (client, message, [allyCode, ...charSearch]) => {
     const firstArgAppearsToBeAllyCode = /^[0-9]{9}$/.test(allyCode) || /^<@.+>$/.test(allyCode) || allyCode === 'me';
@@ -25,17 +25,9 @@ exports.run = async (client, message, [allyCode, ...charSearch]) => {
     } else if (/^<@.+>$/.test(allyCode) || allyCode === 'me' || !allyCode) {
         const user = (!allyCode || allyCode === 'me') ? message.author : await getUserFromMention(client, allyCode);
         if (user) {
-            const response = await client.axios.get(`/api/registration/${user.id}`, {
-                httpsAgent: new https.Agent({
-                    rejectUnauthorized: false
-                })
-            });
-            realAllyCode = response.data.get.filter(obj => obj.discordId === user.id).map(obj => obj.allyCode);
-            client.logger.log(`Got ally code ${JSON.stringify(realAllyCode)} from user ${user.id}`);
-
-            if (!realAllyCode.length) {
-                await message.react('🤔');
-                return await message.reply(`**${user.username}** does not have an associated ally code. Please register one 😁`);
+            realAllyCode = await getAllyCodeForUser(client, user, message);
+            if (!realAllyCode) {
+                return;
             }
         }
     }
