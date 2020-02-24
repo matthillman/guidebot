@@ -64,7 +64,7 @@ exports.run = async (client, message, [scrape, ...allyCodes]) => {
                 } else {
                     await scrapeMessage.react('🍺');
                 }
-            })
+            });
         });
     } else {
         await snapReplyForCompare(allyCodes, `member/compare`, message, client, 'members', true);

@@ -67,6 +67,7 @@ const scrapeGuild = async (client, guild, callback) => {
 
 const reallyDoSnap = async (URL, message, name, authHeader, embed) => {
     const buffer = await snapshot(URL, authHeader);
+    name = name || '🍺';
 
     if (embed) {
         await message.channel.send({
@@ -164,7 +165,7 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, urlS
     }
 };
 
-const snapReplyForCompare = async (codes, urlSlug, message, client, queryParameter, asEmbed) => {
+const snapReplyForCompare = async (codes, urlSlug, message, client, queryParameter, asEmbed, nameOverride) => {
     if (!Array.isArray(codes)) {
         codes = [codes];
     }
@@ -172,8 +173,9 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
     const codeList = codes.join(',');
     const failIndex = failed.indexOf(codeList);
     const URL = `${client.config.client.base_url}/${urlSlug}?${queryParameter}=${codeList}`;
+    console.warn(URL, codeList);
     try {
-        await reallyDoSnap(URL, message, codes.join('_vs_'), client.axios.defaults.headers.common['Authorization'], asEmbed);
+        await reallyDoSnap(URL, message, nameOverride || codes.join('_vs_'), client.axios.defaults.headers.common['Authorization'], asEmbed);
 
         if (failIndex > -1) {
             failed.slice(failIndex, 1);
