@@ -173,7 +173,6 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
     const codeList = codes.join(',');
     const failIndex = failed.indexOf(codeList);
     const URL = `${client.config.client.base_url}/${urlSlug}?${queryParameter}=${codeList}`;
-    console.warn(URL, codeList);
     try {
         await reallyDoSnap(URL, message, nameOverride || codes.join('_vs_'), client.axios.defaults.headers.common['Authorization'], asEmbed);
 
