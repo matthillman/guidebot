@@ -126,7 +126,7 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix,
     }
 };
 
-const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, urlSuffix, asEmbed) => {
+const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, asEmbed, urlSuffix) => {
     const combinedID = `${guild1}_vs_${guild2}`;
     const failIndex = failed.indexOf(combinedID);
     const URL = `${client.config.client.base_url}/${urlSlug}/${guild1}/${guild2}${urlSuffix || ''}`;
@@ -156,7 +156,7 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, urlS
                     await scrapeMessage.react('🎉');
                     await scrapeMessage.delete();
 
-                    await snapReplyForGuilds(guild1, guild2, `compare`, message, client);
+                    await snapReplyForGuilds(guild1, guild2, `compare`, message, client, asEmbed, urlSuffix);
                 } else {
                     await scrapeMessage.react('🍺');
                 }
@@ -165,7 +165,7 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, urlS
     }
 };
 
-const snapReplyForCompare = async (codes, urlSlug, message, client, queryParameter, asEmbed, nameOverride) => {
+const snapReplyForCompare = async (codes, urlSlug, message, client, asEmbed, queryParameter, nameOverride) => {
     if (!Array.isArray(codes)) {
         codes = [codes];
     }
@@ -199,7 +199,7 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
                     await scrapeMessage.react('🎉');
                     await scrapeMessage.delete();
 
-                    await snapReplyForCompare(codes, urlSlug, message, client, queryParameter);
+                    await snapReplyForCompare(codes, urlSlug, message, client, asEmbed, queryParameter, nameOverride);
                 } else {
                     await scrapeMessage.react('🍺');
                 }

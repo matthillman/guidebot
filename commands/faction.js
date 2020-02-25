@@ -52,7 +52,7 @@ exports.run = async (client, message, [allyCode, ...charSearch]) => {
                 })
             });
             const category = categoryResponse.data.data[0];
-            await snapReplyForCompare(category.category_id, `member/${code}/characters`, message, client, 'category', true, category.description.replace(/ /g, '_'));
+            await snapReplyForCompare(category.category_id, `member/${code}/characters`, message, client, true, 'category', category.description.replace(/ /g, '_'));
         } catch (e) {
             client.logger.error(`Category search failed with status ${e.message} [${code}] (${search})`);
             await message.react('🥃');
