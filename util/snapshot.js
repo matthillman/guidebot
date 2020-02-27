@@ -106,6 +106,11 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix,
                 failed.slice(failIndex, 1);
             }
         } catch (e) {
+            if (!e.response || e.response.status != 422) {
+                client.logger.error(`Bad bad response ${e.message} from (${URL})`);
+                await message.reply(`Something bad happened 🧨💥`);
+                continue;
+            }
             client.logger.error(`Fetching page to snapshot failed with status ${e.message} (${URL})`);
             if (failIndex > -1) {
                 failed.slice(failIndex, 1);
@@ -137,10 +142,16 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, asEm
             failed.slice(failIndex, 1);
         }
     } catch (e) {
+        if (!e.response || e.response.status != 422) {
+            client.logger.error(`Bad bad response ${e.message} from (${URL})`);
+            await message.reply(`Something bad happened 🧨💥`);
+            return;
+        }
         client.logger.error(`Fetching page to snapshot failed with status ${e.message} (${URL})`);
         if (failIndex > -1) {
             failed.slice(failIndex, 1);
             await message.reply(`Querying guilds ${guild1} + ${guild2} has failed too many times. Please manually scrape this user and try again`);
+            return;
         }
         failed.push(combinedID);
         client.logger.error(`Error getting snapshot for ${urlSlug} -> ${combinedID}, trying to query`);
@@ -180,10 +191,16 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, asEmbed, que
             failed.slice(failIndex, 1);
         }
     } catch (e) {
+        if (!e.response || e.response.status != 422) {
+            client.logger.error(`Bad bad response ${e.message} from (${URL})`);
+            await message.reply(`Something bad happened 🧨💥`);
+            return;;
+        }
         client.logger.error(`Fetching page to snapshot failed with status "${e.message}" (${URL})`);
         if (failIndex > -1) {
             failed.slice(failIndex, 1);
             await message.reply(`Querying has failed too many times. Please manually scrape these users and try again`);
+            return;
         }
         failed.push(codeList);
         client.logger.error(`Error getting snapshot for ${urlSlug} -> ${codeList}, trying to query`);
