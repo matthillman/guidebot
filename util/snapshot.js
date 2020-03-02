@@ -176,7 +176,7 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, asEm
     }
 };
 
-const snapReplyForCompare = async (codes, urlSlug, message, client, asEmbed, queryParameter, nameOverride) => {
+const snapReplyForCompare = async (codes, urlSlug, message, client, queryParameter, nameOverride, asEmbed) => {
     if (!Array.isArray(codes)) {
         codes = [codes];
     }
@@ -216,7 +216,7 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, asEmbed, que
                     await scrapeMessage.react('🎉');
                     await scrapeMessage.delete();
 
-                    await snapReplyForCompare(codes, urlSlug, message, client, asEmbed, queryParameter, nameOverride);
+                    await snapReplyForCompare(codes, urlSlug, message, client, queryParameter, nameOverride, asEmbed);
                 } else {
                     await scrapeMessage.react('🍺');
                 }
