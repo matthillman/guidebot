@@ -90,7 +90,7 @@ const initBroadcast = async (client) => {
     client.guildQueue = [];
     client.userQueue = [];
 
-    await subscriber.subscribe((channel, message) => {
+    await subscriber.subscribe(async (channel, message) => {
         if (channel == 'private-guilds' && message.event == 'guild.fetched') {
             client.guildQueue.forEach((listener, index) => {
                 if (listener.guild == message.data.guild.guild_id) {
@@ -105,6 +105,49 @@ const initBroadcast = async (client) => {
                     listener.callback();
                 }
             });
+        } else if (message.event == 'bot.command') {
+            switch (message.data.command) {
+                case 'guild-query':
+                    client.logger.log(`Parsing guild-query ${JSON.stringify(message)}`);
+                    let query = message.data.guilds;
+
+                    if (!Array.isArray(query)) {
+                        query = [query];
+                    }
+                    let response = [];
+                    for (const data of query) {
+                        const guild = client.guilds.get(data.guild);
+
+                        let members = await guild.fetchMembers();
+                        if (data.member) {
+                            members = data.member;
+                            if (!Array.isArray(members)) {
+                                members = [members];
+                            }
+                        }
+                        for (const memberID of members) {
+                            const member = guild.members.get(memberID);
+                            response.push({
+                                id: member.id,
+                                guild: guild.id,
+                                username: member.username,
+                                roles: [...member.roles.map(r => ({ id: r.id, name: r.name }))],
+                            });
+                        }
+
+                    }
+
+                    try {
+                        const status = await axios.post('/api/guild-query-response', { response }, {
+                            httpsAgent: new https.Agent({
+                                rejectUnauthorized: false
+                            })
+                        });
+                        client.logger.log(`Posted guild query response: ${status}`);
+                    } catch (e) {
+                        console.error(e);
+                    }
+            }
         }
     });
 
