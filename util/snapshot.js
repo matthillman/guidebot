@@ -106,7 +106,7 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix,
                 failed.slice(failIndex, 1);
             }
         } catch (e) {
-            if (!e.response || e.response.status != 422) {
+            if (!e.response || (e.response.status != 422 && e.message != 422)) {
                 client.logger.error(`Bad bad response ${e.message} from (${URL})`);
                 await message.reply(`Something bad happened 🧨💥`);
                 continue;
@@ -142,7 +142,7 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, asEm
             failed.slice(failIndex, 1);
         }
     } catch (e) {
-        if (!e.response || e.response.status != 422) {
+        if (!e.response || (e.response.status != 422 && e.message != 422)) {
             client.logger.error(`Bad bad response ${e.message} from (${URL})`);
             await message.reply(`Something bad happened 🧨💥`);
             return;
@@ -191,7 +191,7 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
             failed.slice(failIndex, 1);
         }
     } catch (e) {
-        if (!e.response || e.response.status != 422) {
+        if (!e.response || (e.response.status != 422 && e.message != 422)) {
             client.logger.error(`Bad bad response ${e.message} from (${URL})`);
             await message.reply(`Something bad happened 🧨💥`);
             return;;
