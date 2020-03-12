@@ -28,6 +28,8 @@ require('./util/extensions');
 // or `bot.something`, this is what we're refering to. Your client.
 const client = new Discord.Client();
 
+exports.client = client;
+
 // Here we load the config file that contains our token and our prefix values.
 client.config = require("./config.js");
 // client.config.token contains the bot's token
@@ -84,6 +86,8 @@ const initAPI = async (client) => {
 };
 
 const RedisSubscriber = require('laravel-echo-server/dist/subscribers').RedisSubscriber;
+
+const { snapDM } = require('./util/snapshot');
 
 const initBroadcast = async (client) => {
     const subscriber = new RedisSubscriber(require('../../laravel-echo-server.json'));
@@ -161,6 +165,16 @@ const initBroadcast = async (client) => {
                     } catch (e) {
                         client.logger.error(e);
                     }
+                    break;
+                }
+                case 'send-dms': {
+                    client.logger.log(`Parsing send-dms ${JSON.stringify(message)}`);
+                    const URL = message.data.url;
+                    for (const member of message.data.members) {
+                        await snapDM(member.ally_code, URL, client.users.get(member.id), client, '', true, message.data.message);
+                        client.logger.log(`DM sent for: ${URL}`);
+                    }
+
                     break;
                 }
                 default:

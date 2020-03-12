@@ -65,15 +65,16 @@ const scrapeGuild = async (client, guild, callback) => {
     }
 };
 
-const reallyDoSnap = async (URL, message, name, authHeader, embed) => {
+const reallyDoSnap = async (URL, channel, name, authHeader, embed, message = null) => {
     const buffer = await snapshot(URL, authHeader);
     name = name || '🍺';
 
     if (embed) {
-        await message.channel.send({
+        await channel.send({
             files: [new Attachment(buffer, `${name}.png`)],
             embed: {
                 title : `${name.replace(/_/g, ' ')}`,
+                description: message,
                 color: 0xfce34d,
                 url: URL,
                 thumbnail: {
@@ -85,8 +86,22 @@ const reallyDoSnap = async (URL, message, name, authHeader, embed) => {
             },
         });
     } else {
-        await message.channel.send(new Attachment(buffer, `${name}.png`));
-        await message.channel.send(`URL: ${URL}`);
+        await channel.send(new Attachment(buffer, `${name}.png`));
+        await channel.send(`URL: ${URL}`);
+    }
+};
+
+const snapDM = async (code, urlSlug, channel, client, urlSuffix, asEmbed, message) => {
+    const URL = `${client.config.client.base_url}/${urlSlug}/${code}${urlSuffix || ''}`;
+    try {
+        await reallyDoSnap(URL, channel, code, client.axios.defaults.headers.common['Authorization'], asEmbed, message);
+    } catch (e) {
+        if (!((e.response && e.response.status == 422) || e.message == 422)) {
+            client.logger.error(`Bad bad response ${e.message} from (${URL})`);
+        } else {
+            client.logger.error(`Fetching page to snapshot failed with status ${e.message} (${URL})`);
+        }
+        client.logger.error(`Error getting snapshot for ${urlSlug} -> ${code}`);
     }
 };
 
@@ -100,7 +115,7 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix,
         const failIndex = failed.indexOf(code);
         const URL = `${client.config.client.base_url}/${urlSlug}/${code}${urlSuffix || ''}`;
         try {
-            await reallyDoSnap(URL, message, code, client.axios.defaults.headers.common['Authorization'], asEmbed);
+            await reallyDoSnap(URL, message.channel, code, client.axios.defaults.headers.common['Authorization'], asEmbed);
 
             if (failIndex > -1) {
                 failed.slice(failIndex, 1);
@@ -136,7 +151,7 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, asEm
     const failIndex = failed.indexOf(combinedID);
     const URL = `${client.config.client.base_url}/${urlSlug}/${guild1}/${guild2}${urlSuffix || ''}`;
     try {
-        await reallyDoSnap(URL, message, combinedID, client.axios.defaults.headers.common['Authorization'], asEmbed);
+        await reallyDoSnap(URL, message.channel, combinedID, client.axios.defaults.headers.common['Authorization'], asEmbed);
 
         if (failIndex > -1) {
             failed.slice(failIndex, 1);
@@ -185,7 +200,7 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
     const failIndex = failed.indexOf(codeList);
     const URL = `${client.config.client.base_url}/${urlSlug}?${queryParameter}=${codeList}`;
     try {
-        await reallyDoSnap(URL, message, nameOverride || codes.join('_vs_'), client.axios.defaults.headers.common['Authorization'], asEmbed);
+        await reallyDoSnap(URL, message.channel, nameOverride || codes.join('_vs_'), client.axios.defaults.headers.common['Authorization'], asEmbed);
 
         if (failIndex > -1) {
             failed.slice(failIndex, 1);
@@ -231,3 +246,4 @@ exports.snapReplyForCompare = snapReplyForCompare;
 exports.snapReplyForGuilds = snapReplyForGuilds;
 exports.scrapeGuild = scrapeGuild;
 exports.scrapeUser = scrapeUser;
+exports.snapDM = snapDM;

@@ -30,6 +30,12 @@ module.exports = (client, message) => {
     }
   }
 
+  if (!message.guild) {
+    client.logger.log(`DM from ${message.author.username}#${message.author.discriminator}: ${message.content}`);
+    message.channel.send("Hey, no one reads these DMs… I'm a bot.");
+    return;
+  }
+
   // Also good practice to ignore any message that does not start with our prefix,
   // which is set in the configuration file.
   if (message.content.indexOf(settings.prefix) !== 0) return;
