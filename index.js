@@ -107,16 +107,24 @@ const initBroadcast = async (client) => {
             });
         } else if (message.event == 'bot.command') {
             switch (message.data.command) {
-                case 'guild-query':
+                case 'guild-query': {
                     client.logger.log(`Parsing guild-query ${JSON.stringify(message)}`);
                     let query = message.data.guilds;
 
                     if (!Array.isArray(query)) {
                         query = [query];
                     }
-                    let response = [];
+
+                    const response = [];
+                    let role = null;
                     for (const data of query) {
                         const guild = client.guilds.get(data.guild);
+
+                        if (data.role) {
+                            const roleExp = new RegExp(data.role, 'i');
+                            role = await guild.roles.find(role => roleExp.test(role.name));
+
+                        }
 
                         let members = await guild.fetchMembers();
                         if (data.member) {
@@ -124,29 +132,39 @@ const initBroadcast = async (client) => {
                             if (!Array.isArray(members)) {
                                 members = [members];
                             }
+                            members = members.map(m => guild.members.get(m));
+                        } else {
+                            members = [...members.members.values()];
                         }
-                        for (const memberID of members) {
-                            const member = guild.members.get(memberID);
-                            response.push({
-                                id: member.id,
-                                guild: guild.id,
-                                username: member.username,
-                                roles: [...member.roles.map(r => ({ id: r.id, name: r.name }))],
-                            });
+                        for (const member of members) {
+                            if (!role || role && member.roles.has(role.id)) {
+                                response.push({
+                                    id: member.id,
+                                    guild: guild.id,
+                                    username: member.user.username,
+                                    discriminator: member.user.discriminator,
+                                    email: member.user.email,
+                                    avatar: member.user.avatar,
+                                    roles: [...member.roles.map(r => ({ id: r.id, name: r.name }))],
+                                });
+                            }
                         }
-
                     }
 
                     try {
-                        const status = await axios.post('/api/guild-query-response', { response }, {
+                        const status = await axios.post('/api/guild-query-response', { response, role }, {
                             httpsAgent: new https.Agent({
                                 rejectUnauthorized: false
                             })
                         });
                         client.logger.log(`Posted guild query response: ${status}`);
                     } catch (e) {
-                        console.error(e);
+                        client.logger.error(e);
                     }
+                    break;
+                }
+                default:
+                    client.logger.error(`Unknown command ${message.data.command}`);
             }
         }
     });
