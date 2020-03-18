@@ -30,7 +30,7 @@ module.exports = (client, message) => {
     }
   }
 
-  if (!message.guild) {
+  if (!message.guild && message.content.indexOf(settings.prefix) !== 0) {
     client.logger.log(`DM from ${message.author.username}#${message.author.discriminator}: ${message.content}`);
     message.channel.send("Hey, no one reads these DMs… I'm a bot.");
     return;
