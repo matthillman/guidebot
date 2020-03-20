@@ -2,14 +2,13 @@
 const puppeteer = require('puppeteer');
 const { Attachment } = require('discord.js');
 
-let browser = null;
 let authHeader = null;
 const init = async client => {
-    browser = await puppeteer.launch({ headless: true });
     authHeader = client.axios.defaults.headers.common['Authorization'];
 };
 const snapshot = async (url) => {
     const start = (new Date).getTime();
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 800, deviceScaleFactor: 2 });
     await page.setExtraHTTPHeaders({
@@ -30,6 +29,7 @@ const snapshot = async (url) => {
         result = false;
     }
     await page.close();
+    await browser.close();
     if (result === false) {
         throw new Error(response.status());
     }
