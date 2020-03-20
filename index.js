@@ -1,16 +1,9 @@
-// This will check if the node version you are running is the required
-// Node version, if it isn't it will throw the following error to inform
-// you.
 if (process.version.slice(1).split(".")[0] < 8) throw new Error("Node 8.0.0 or higher is required. Update Node on your system.");
 
-// This will make sure all of our relative paths actually work, even if we call the script
-// from another directory.
 process.chdir(__dirname);
 global.__basedir = __dirname;
 
-// Load up the discord.js library
 const Discord = require("discord.js");
-// We also load the rest of the things we need in this file:
 const { promisify } = require("util");
 const readdir = promisify(require("fs").readdir);
 const Enmap = require("enmap");
@@ -23,40 +16,22 @@ const { Pool } = require('pg');
 
 require('./util/extensions');
 
-// This is your client. Some people call it `bot`, some people call it `self`,
-// some might call it `cootchie`. Either way, when you see `client.something`,
-// or `bot.something`, this is what we're refering to. Your client.
 const client = new Discord.Client();
 
 exports.client = client;
 
-// Here we load the config file that contains our token and our prefix values.
 client.config = require("./config.js");
-// client.config.token contains the bot's token
-// client.config.prefix contains the message prefix
 
-// Require our logger
 client.logger = require("./util/Logger");
-
-// Let's start by getting some useful functions that we'll use throughout
-// the bot, like logs and elevation features.
 require("./modules/functions.js")(client);
 
-// Aliases and commands are put in collections where they can be read from,
-// catalogued, listed, etc.
 client.commands = new Enmap();
 client.aliases = new Enmap();
 
-// Now we integrate the use of Evie's awesome Enhanced Map module, which
-// essentially saves a collection to disk. This is great for per-server configs,
-// and makes things extremely easy for this purpose.
 client.settings = new Enmap({ provider: new EnmapLevel({ name: "settings" }) });
 
 client.imageChannels = new Enmap({ provider: new EnmapLevel({ name: "image-generation" }) });
 client.recruitingChannels = new Enmap({ provider: new EnmapLevel({ name: "recruiting-watcher" }) });
-
-// We're doing real fancy node 8 async/await stuff here, and to do that
-// we need to wrap stuff in an anonymous function. It's annoying but it works.
 
 axios.defaults.baseURL = client.config.client.base_url;
 axios.defaults.headers.common['Accept'] = 'application/json';
@@ -87,8 +62,6 @@ const initAPI = async (client) => {
 
 const RedisSubscriber = require('laravel-echo-server/dist/subscribers').RedisSubscriber;
 
-const { snapDM } = require('./util/snapshot');
-
 const initBroadcast = async (client) => {
     const subscriber = new RedisSubscriber(require('../../laravel-echo-server.json'));
     client.guildQueue = [];
@@ -109,77 +82,6 @@ const initBroadcast = async (client) => {
                     listener.callback();
                 }
             });
-        } else if (message.event == 'bot.command') {
-            switch (message.data.command) {
-                case 'guild-query': {
-                    client.logger.log(`Parsing guild-query ${JSON.stringify(message)}`);
-                    let query = message.data.guilds;
-
-                    if (!Array.isArray(query)) {
-                        query = [query];
-                    }
-
-                    const response = [];
-                    let role = null;
-                    for (const data of query) {
-                        const guild = client.guilds.get(data.guild);
-
-                        if (data.role) {
-                            const roleExp = new RegExp(data.role, 'i');
-                            role = await guild.roles.find(role => roleExp.test(role.name));
-
-                        }
-
-                        let members = await guild.fetchMembers();
-                        if (data.member) {
-                            members = data.member;
-                            if (!Array.isArray(members)) {
-                                members = [members];
-                            }
-                            members = members.map(m => guild.members.get(m));
-                        } else {
-                            members = [...members.members.values()];
-                        }
-                        for (const member of members) {
-                            if (!role || role && member.roles.has(role.id)) {
-                                response.push({
-                                    id: member.id,
-                                    guild: guild.id,
-                                    username: member.user.username,
-                                    discriminator: member.user.discriminator,
-                                    email: member.user.email,
-                                    avatar: member.user.avatar,
-                                    roles: [...member.roles.map(r => ({ id: r.id, name: r.name }))],
-                                });
-                            }
-                        }
-                    }
-
-                    try {
-                        const status = await axios.post('/api/guild-query-response', { response, role }, {
-                            httpsAgent: new https.Agent({
-                                rejectUnauthorized: false
-                            })
-                        });
-                        client.logger.log(`Posted guild query response: ${status}`);
-                    } catch (e) {
-                        client.logger.error(e);
-                    }
-                    break;
-                }
-                case 'send-dms': {
-                    client.logger.log(`Parsing send-dms ${JSON.stringify(message)}`);
-                    const URL = message.data.url;
-                    for (const member of message.data.members) {
-                        await snapDM(member.ally_code, URL, client.users.get(member.id), client, '', true, message.data.message);
-                        client.logger.log(`DM sent for: ${URL}`);
-                    }
-
-                    break;
-                }
-                default:
-                    client.logger.error(`Unknown command ${message.data.command}`);
-            }
         }
     });
 
@@ -192,6 +94,12 @@ const init = async (client) => {
     client.logger.log("Done with API init 👌");
     await initBroadcast(client);
     client.logger.log("Done with Broadcast Listener init 👌");
+
+    // Init snapshot
+    const { initSnapshot } = require('./util/snapshot');
+    client.logger.log("Done with snapshot init 👌");
+
+    await initSnapshot(client);
 
     // Here we load **commands** into memory, as a collection, so they're accessible
     // here and everywhere else.
@@ -233,11 +141,8 @@ const init = async (client) => {
     }
 
     client.logger.log(`Logging into discord`);
-    // Here we login the client.
     client.login(client.config.token);
     client.logger.log(`Init complete`);
-
-    // End top-level async/await function.
 };
 
 init(client);

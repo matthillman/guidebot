@@ -2,25 +2,33 @@
 const puppeteer = require('puppeteer');
 const { Attachment } = require('discord.js');
 
-const snapshot = async (url, authHeader = '') => {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
+let browser = null;
+let page = null;
+const init = async client => {
+    browser = await puppeteer.launch({ headless: true });
+    page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 800, deviceScaleFactor: 2 });
     await page.setExtraHTTPHeaders({
         schwartz: 'bot',
-        Authorization: authHeader,
+        Authorization: client.axios.defaults.headers.common['Authorization'],
     });
+};
+const snapshot = async (url) => {
+    const start = (new Date).getTime();
     const response = await page.goto(url);
+    console.log(`⏲  Response took ${((new Date).getTime() - start) / 1000} seconds`);
     let result;
     if (response.ok()) {
         await page.evaluateHandle('document.fonts.ready');
+        console.log(`⏲  document.fonts.ready took ${((new Date).getTime() - start) / 1000} seconds`);
         const card = await page.$('.card');
+        console.log(`⏲  finding .card took ${((new Date).getTime() - start) / 1000} seconds`);
         result = await card.screenshot();
+        console.log(`⏲  screenshot took ${((new Date).getTime() - start) / 1000} seconds`);
     } else {
         result = false;
     }
-    await page.close();
-    await browser.close();
+    // await page.close();
     if (result === false) {
         throw new Error(response.status());
     }
@@ -65,8 +73,8 @@ const scrapeGuild = async (client, guild, callback) => {
     }
 };
 
-const reallyDoSnap = async (URL, channel, name, authHeader, embed, message = null) => {
-    const buffer = await snapshot(URL, authHeader);
+const reallyDoSnap = async (URL, channel, name, embed, message = null) => {
+    const buffer = await snapshot(URL);
     name = name || '🍺';
 
     if (embed) {
@@ -94,7 +102,7 @@ const reallyDoSnap = async (URL, channel, name, authHeader, embed, message = nul
 const snapDM = async (code, urlSlug, channel, client, urlSuffix, asEmbed, message) => {
     const URL = `${client.config.client.base_url}/${urlSlug}/${code}${urlSuffix || ''}`;
     try {
-        await reallyDoSnap(URL, channel, code, client.axios.defaults.headers.common['Authorization'], asEmbed, message);
+        await reallyDoSnap(URL, channel, code, asEmbed, message);
     } catch (e) {
         if (!((e.response && e.response.status == 422) || e.message == 422)) {
             client.logger.error(`Bad bad response ${e.message} from (${URL})`);
@@ -115,7 +123,7 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix,
         const failIndex = failed.indexOf(code);
         const URL = `${client.config.client.base_url}/${urlSlug}/${code}${urlSuffix || ''}`;
         try {
-            await reallyDoSnap(URL, message.channel, code, client.axios.defaults.headers.common['Authorization'], asEmbed);
+            await reallyDoSnap(URL, message.channel, code, asEmbed);
 
             if (failIndex > -1) {
                 failed.slice(failIndex, 1);
@@ -151,7 +159,7 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, asEm
     const failIndex = failed.indexOf(combinedID);
     const URL = `${client.config.client.base_url}/${urlSlug}/${guild1}/${guild2}${urlSuffix || ''}`;
     try {
-        await reallyDoSnap(URL, message.channel, combinedID, client.axios.defaults.headers.common['Authorization'], asEmbed);
+        await reallyDoSnap(URL, message.channel, combinedID, asEmbed);
 
         if (failIndex > -1) {
             failed.slice(failIndex, 1);
@@ -200,7 +208,7 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
     const failIndex = failed.indexOf(codeList);
     const URL = `${client.config.client.base_url}/${urlSlug}?${queryParameter}=${codeList}`;
     try {
-        await reallyDoSnap(URL, message.channel, nameOverride || codes.join('_vs_'), client.axios.defaults.headers.common['Authorization'], asEmbed);
+        await reallyDoSnap(URL, message.channel, nameOverride || codes.join('_vs_'), asEmbed);
 
         if (failIndex > -1) {
             failed.slice(failIndex, 1);
@@ -247,3 +255,4 @@ exports.snapReplyForGuilds = snapReplyForGuilds;
 exports.scrapeGuild = scrapeGuild;
 exports.scrapeUser = scrapeUser;
 exports.snapDM = snapDM;
+exports.initSnapshot = init;
