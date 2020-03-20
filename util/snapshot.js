@@ -16,15 +16,19 @@ const snapshot = async (url) => {
         Authorization: authHeader,
     });
     const response = await page.goto(url);
-    console.log(`⏲  Response took ${((new Date).getTime() - start) / 1000} seconds`);
+    let cur = (new Date).getTime();
+    console.log(`⏲  Response took ${(cur - start) / 1000} seconds`);
     let result;
     if (response.ok()) {
         await page.evaluateHandle('document.fonts.ready');
-        console.log(`⏲  document.fonts.ready took ${((new Date).getTime() - start) / 1000} seconds`);
+        cur = (new Date).getTime();
+        console.log(`⏲  document.fonts.ready took ${(cur - start) / 1000} seconds`);
         const card = await page.$('.card');
-        console.log(`⏲  finding .card took ${((new Date).getTime() - start) / 1000} seconds`);
+        cur = (new Date).getTime();
+        console.log(`⏲  finding .card took ${(cur - start) / 1000} seconds`);
         result = await card.screenshot();
-        console.log(`⏲  screenshot took ${((new Date).getTime() - start) / 1000} seconds`);
+        cur = (new Date).getTime();
+        console.log(`⏲  screenshot took ${(cur - start) / 1000} seconds`);
     } else {
         result = false;
     }
