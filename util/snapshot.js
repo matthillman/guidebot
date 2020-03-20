@@ -3,8 +3,10 @@ const puppeteer = require('puppeteer');
 const { Attachment } = require('discord.js');
 
 let browser = null;
+let authHeader = null;
 const init = async client => {
     browser = await puppeteer.launch({ headless: true });
+    authHeader = client.axios.defaults.headers.common['Authorization'];
 };
 const snapshot = async (url) => {
     const start = (new Date).getTime();
@@ -12,7 +14,7 @@ const snapshot = async (url) => {
     await page.setViewport({ width: 1200, height: 800, deviceScaleFactor: 2 });
     await page.setExtraHTTPHeaders({
         schwartz: 'bot',
-        Authorization: client.axios.defaults.headers.common['Authorization'],
+        Authorization: authHeader,
     });
     const response = await page.goto(url);
     console.log(`⏲  Response took ${((new Date).getTime() - start) / 1000} seconds`);
