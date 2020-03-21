@@ -126,8 +126,21 @@ const initBroadcast = async (client) => {
                     const start = (new Date).getTime();
                     const URL = message.data.url;
                     for (const member of message.data.members) {
-                        await snapDM(member.ally_code, URL, client.users.get(member.id), client, '', true, message.data.message);
-                        client.logger.log(`DM sent to ${member.ally_code} (${member.id}) for URL [${URL}] (${((new Date).getTime() - start) / 1000} seconds)`);
+                        let success = false;
+                        try {
+                            await snapDM(member.ally_code, URL, client.users.get(member.id), client, '', true, message.data.message);
+                            success = true;
+                            client.logger.log(`DM sent to ${member.ally_code} (${member.id}) for URL [${URL}] (${((new Date).getTime() - start) / 1000} seconds)`);
+                        } catch (error) {
+                            client.logger.error(`DM failed to sent to ${member.ally_code} (${member.id}) for URL [${URL}] [${error}]`);
+                        }
+
+                        const status = await axios.post('/api/send-dm-response', { member: member.id, success, context: message.data.context }, {
+                            httpsAgent: new https.Agent({
+                                rejectUnauthorized: false
+                            })
+                        });
+                        client.logger.log(`Posted dm query response: ${status}`);
                     }
                     client.logger.log(`⏲  Sending ${message.data.members.length} DMs took ${((new Date).getTime() - start) / 1000} seconds`);
 
