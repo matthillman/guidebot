@@ -2,6 +2,13 @@
 const puppeteer = require('puppeteer');
 const { Attachment } = require('discord.js');
 
+class PageError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'PageError';
+    }
+}
+
 let authHeader = null;
 const init = async client => {
     authHeader = client.axios.defaults.headers.common['Authorization'];
@@ -20,18 +27,23 @@ const snapshot = async (url) => {
     console.log(`⏲  Response took ${(cur - start) / 1000} seconds`);
     let result;
     if (response.ok()) {
-        await page.evaluateHandle('document.fonts.ready');
-        start = cur;
-        cur = (new Date).getTime();
-        console.log(`⏲  document.fonts.ready took ${(cur - start) / 1000} seconds`);
-        const card = await page.$('.card');
-        start = cur;
-        cur = (new Date).getTime();
-        console.log(`⏲  finding .card took ${(cur - start) / 1000} seconds`);
-        result = await card.screenshot();
-        start = cur;
-        cur = (new Date).getTime();
-        console.log(`⏲  screenshot took ${(cur - start) / 1000} seconds`);
+        try {
+            await page.evaluateHandle('document.fonts.ready');
+            start = cur;
+            cur = (new Date).getTime();
+            console.log(`⏲  document.fonts.ready took ${(cur - start) / 1000} seconds`);
+            const card = await page.$('.card');
+            start = cur;
+            cur = (new Date).getTime();
+            console.log(`⏲  finding .card took ${(cur - start) / 1000} seconds`);
+            result = await card.screenshot();
+            start = cur;
+            cur = (new Date).getTime();
+            console.log(`⏲  screenshot took ${(cur - start) / 1000} seconds`);
+        } catch (e) {
+            console.log(`💥 Something broke [${e}]`);
+            throw new PageError(`${e}`);
+        }
     } else {
         result = false;
     }
@@ -112,6 +124,10 @@ const snapDM = async (code, urlSlug, channel, client, urlSuffix, asEmbed, messag
     try {
         await reallyDoSnap(URL, channel, code, asEmbed, message);
     } catch (e) {
+        if (e instanceof PageError) {
+            setTimeout(() => snapDM(code, urlSlug, channel, client, urlSuffix, asEmbed, message), 500);
+            return;
+        }
         if (!((e.response && e.response.status == 422) || e.message == 422)) {
             client.logger.error(`Bad bad response ${e.message} from (${URL})`);
         } else {
@@ -137,6 +153,10 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix,
                 failed.slice(failIndex, 1);
             }
         } catch (e) {
+            if (e instanceof PageError) {
+                setTimeout(() => snapReplyForAllyCodes(codes, urlSlug, message, client, urlSuffix, asEmbed), 500);
+                return;
+            }
             if (!((e.response && e.response.status == 422) || e.message == 422)) {
                 client.logger.error(`Bad bad response ${e.message} from (${URL})`);
                 await message.reply(`Something bad happened 🧨💥`);
@@ -173,6 +193,10 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, asEm
             failed.slice(failIndex, 1);
         }
     } catch (e) {
+        if (e instanceof PageError) {
+            setTimeout(() => snapReplyForGuilds(guild1, guild2, urlSlug, message, client, asEmbed, urlSuffix), 500);
+            return;
+        }
         if (!((e.response && e.response.status == 422) || e.message == 422)) {
             client.logger.error(`Bad bad response ${e.message} from (${URL})`);
             await message.reply(`Something bad happened 🧨💥`);
@@ -222,10 +246,14 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
             failed.slice(failIndex, 1);
         }
     } catch (e) {
+        if (e instanceof PageError) {
+            setTimeout(() => snapReplyForCompare(codes, urlSlug, message, client, queryParameter, nameOverride, asEmbed), 500);
+            return;
+        }
         if (!((e.response && e.response.status == 422) || e.message == 422)) {
             client.logger.error(`Bad bad response ${e.message} from (${URL})`);
             await message.reply(`Something bad happened 🧨💥`);
-            return;;
+            return;
         }
         client.logger.error(`Fetching page to snapshot failed with status "${e.message}" (${URL})`);
         if (failIndex > -1) {
