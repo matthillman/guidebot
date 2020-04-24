@@ -64,14 +64,14 @@ exports.run = async (client, message, [scrape, ...allyCodes]) => {
                     await scrapeMessage.react('🎉');
                     await scrapeMessage.delete();
 
-                    await snapReplyForCompare(allyCodes, `member/compare`, message, client, 'members', true);
+                    await snapReplyForCompare(allyCodes, `member/compare`, message, client, 'members', null, true);
                 } else {
                     await scrapeMessage.react('🍺');
                 }
             });
         });
     } else {
-        await snapReplyForCompare(allyCodes, `member/compare`, message, client, 'members', true);
+        await snapReplyForCompare(allyCodes, `member/compare`, message, client, 'members', null, true);
     }
 
     await message.react('🎉');
