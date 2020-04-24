@@ -16,7 +16,7 @@ exports.run = async (client, message, [scrape, ...allyCodes]) => {
     const realCodes = [];
 
     for (const code of allyCodes) {
-        if (/^[0-9]{9}$/.test(code)) {
+        if (/^[0-9]{9}$/.test(code) || /^g[0-9]+$/.test(code)) {
             realCodes.push(code);
         } else if (/^<@.+>$/.test(code) || code === 'me') {
             const user = (!code || code === 'me') ? message.author : await getUserFromMention(client, code);
@@ -53,6 +53,10 @@ exports.run = async (client, message, [scrape, ...allyCodes]) => {
         let completeCount = 0;
 
         allyCodes.forEach(async code => {
+            if (/^g[0-9]+$/.test(code)) {
+                completeCount += 1;
+                return;
+            }
             await scrapeUser(client, code, async () => {
                 completeCount += 1;
 
