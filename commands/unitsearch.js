@@ -46,7 +46,7 @@ DESCRIPTION: ${unit.description}\n`;
 exports.conf = {
     enabled: true,
     guildOnly: false,
-    aliases: ['unit', 'us'],
+    aliases: ['us', 'units'],
     permLevel: "User"
 };
 
