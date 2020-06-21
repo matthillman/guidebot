@@ -157,10 +157,8 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix,
                 setTimeout(() => snapReplyForAllyCodes(codes, urlSlug, message, client, urlSuffix, asEmbed), 500);
                 return;
             }
-            if (!((e.response && e.response.status == 422) || e.message == 422)) {
+            if (!((e.response && e.response.status !== 422) && e.message != 422)) {
                 client.logger.error(`Bad bad response ${e.message} from (${URL})`);
-                await message.reply(`Something bad happened 🧨💥`);
-                continue;
             }
             client.logger.error(`Fetching page to snapshot failed with status ${e.message} (${URL})`);
             if (failIndex > -1) {
@@ -197,10 +195,8 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, asEm
             setTimeout(() => snapReplyForGuilds(guild1, guild2, urlSlug, message, client, asEmbed, urlSuffix), 500);
             return;
         }
-        if (!((e.response && e.response.status == 422) || e.message == 422)) {
+        if (!((e.response && e.response.status != 422) && e.message != 422)) {
             client.logger.error(`Bad bad response ${e.message} from (${URL})`);
-            await message.reply(`Something bad happened 🧨💥`);
-            return;
         }
         client.logger.error(`Fetching page to snapshot failed with status ${e.message} (${URL})`);
         if (failIndex > -1) {
@@ -250,10 +246,8 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
             setTimeout(() => snapReplyForCompare(codes, urlSlug, message, client, queryParameter, nameOverride, asEmbed), 500);
             return;
         }
-        if (!((e.response && e.response.status == 422) || e.message == 422)) {
+        if (!((e.response && e.response.status != 422) && e.message != 422)) {
             client.logger.error(`Bad bad response ${e.message} from (${URL})`);
-            await message.reply(`Something bad happened 🧨💥`);
-            return;
         }
         client.logger.error(`Fetching page to snapshot failed with status "${e.message}" (${URL})`);
         if (failIndex > -1) {
