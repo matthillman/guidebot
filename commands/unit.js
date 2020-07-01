@@ -72,8 +72,8 @@ exports.conf = {
 };
 
 exports.help = {
-    name: "mods",
+    name: "unit",
     category: "SWGOH",
-    description: "Shows mods for a user's character",
-    usage: "mods [ally code/mention/nothing] [unit]"
+    description: "Shows a user's character",
+    usage: "unit [ally code/mention/nothing] [unit]"
 };
