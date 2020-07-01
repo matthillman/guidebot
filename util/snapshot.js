@@ -27,23 +27,22 @@ const snapshot = async (url) => {
     console.log(`⏲  Response took ${(cur - start) / 1000} seconds`);
     let result;
     if (response.ok()) {
-        try {
-            await page.evaluateHandle('document.fonts.ready');
-            start = cur;
-            cur = (new Date).getTime();
-            console.log(`⏲  document.fonts.ready took ${(cur - start) / 1000} seconds`);
-            const card = await page.$('.card');
-            start = cur;
-            cur = (new Date).getTime();
-            console.log(`⏲  finding .card took ${(cur - start) / 1000} seconds`);
-            result = await card.screenshot();
-            start = cur;
-            cur = (new Date).getTime();
-            console.log(`⏲  screenshot took ${(cur - start) / 1000} seconds`);
-        } catch (e) {
+        const handleError = e => {
             console.log(`💥 Something broke [${e}]`);
             throw new PageError(`${e}`);
-        }
+        };
+        await page.evaluateHandle('document.fonts.ready').catch(handleError);
+        start = cur;
+        cur = (new Date).getTime();
+        console.log(`⏲  document.fonts.ready took ${(cur - start) / 1000} seconds`);
+        const card = await page.$('.card').catch(handleError);
+        start = cur;
+        cur = (new Date).getTime();
+        console.log(`⏲  finding .card took ${(cur - start) / 1000} seconds`);
+        result = await card.screenshot().catch(handleError);
+        start = cur;
+        cur = (new Date).getTime();
+        console.log(`⏲  screenshot took ${(cur - start) / 1000} seconds`);
     } else {
         result = false;
     }
