@@ -52,7 +52,7 @@ exports.run = async (client, message, [allyCode, ...charSearch]) => {
                 })
             });
             const character = charResponse.data;
-            await snapReplyForAllyCodes(character.unit_name, `member/${code}/character`, message, client);
+            await snapReplyForAllyCodes(code, `member`, message, client, `/character/${character.unit_name}`);
         } catch (e) {
             client.logger.error(`Character search failed with status ${e.message} [${code}] (${search})`);
             await message.react('🥃');
