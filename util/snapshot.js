@@ -173,7 +173,7 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix,
                 await scrapeMessage.react('🎉');
                 await scrapeMessage.delete();
 
-                await snapReplyForAllyCodes(codes, urlSlug, message, client);
+                await snapReplyForAllyCodes(codes, urlSlug, message, client, urlSuffix, asEmbed);
             });
         }
     }
