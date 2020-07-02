@@ -5,7 +5,7 @@ async function run() {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 800 });
-    const response = await page.goto(`https://schwartz.dev/member/552325555`);
+    const response = await page.goto(`https://schwartz.test/member/552325555`);
     if (response.ok()) {
         const card = await page.$('.card');
         await card.screenshot({ path: `${__basedir}/test/test.png` });
