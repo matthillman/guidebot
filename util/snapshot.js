@@ -22,15 +22,15 @@ const snapshot = async (url) => {
         schwartz: 'bot',
         Authorization: authHeader,
     });
-    const response = await page.goto(url);
+    const handleError = e => {
+        console.log(`💥 Something broke [${e}]`);
+        throw new PageError(`${e}`);
+    };
+    const response = await page.goto(url).catch(handleError);
     let cur = (new Date).getTime();
     console.log(`⏲  Response took ${(cur - start) / 1000} seconds`);
     let result;
     if (response.ok()) {
-        const handleError = e => {
-            console.log(`💥 Something broke [${e}]`);
-            throw new PageError(`${e}`);
-        };
         await page.evaluateHandle('document.fonts.ready').catch(handleError);
         start = cur;
         cur = (new Date).getTime();
