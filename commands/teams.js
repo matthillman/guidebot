@@ -15,6 +15,14 @@ const teamList = [
 ];
 
 exports.run = async (client, message, [allyCode, team]) => {
+    const firstArgAppearsToBeAllyCode = /^[0-9]{9}$/.test(allyCode) || /^<@.+>$/.test(allyCode) || allyCode === 'me';
+
+    if (team.length === 0 || !firstArgAppearsToBeAllyCode) {
+        // assuming that if we only get 1 argument it's a character name
+        team = allyCode;
+        allyCode = null;
+    }
+
     if (!team) {
         return message.reply(`\`\`\`asciidoc
 The following teams are available:
