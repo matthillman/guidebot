@@ -14,7 +14,7 @@ const teamList = [
     {label: 'CT Pit', value: 'pit'},
 ];
 
-exports.run = async (client, message, [team, allyCode]) => {
+exports.run = async (client, message, [allyCode, team]) => {
     if (!team) {
         return message.reply(`\`\`\`asciidoc
 The following teams are available:
