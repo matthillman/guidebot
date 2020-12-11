@@ -11,6 +11,7 @@ const teamList = [
     {label: 'Darth Malak', value: 'malak'},
     {label: 'Hoth TB', value: 'tb'},
     {label: 'STR', value: 'str'},
+    {label: 'CT Pit', value: 'pit'},
 ];
 
 exports.run = async (client, message, [team, allyCode]) => {
@@ -29,6 +30,9 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
 
     if (team === 'mods') {
         team = 'tw_mods';
+    }
+    if (team === 'pit') {
+        team = '28';
     }
 
     if (allyCode) {
