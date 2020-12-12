@@ -149,7 +149,7 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix,
             await reallyDoSnap(URL, message.channel, code, asEmbed);
 
             if (failIndex > -1) {
-                failed.slice(failIndex, 1);
+                failed.splice(failIndex, 1);
             }
         } catch (e) {
             if (e instanceof PageError) {
@@ -161,8 +161,8 @@ const snapReplyForAllyCodes = async (codes, urlSlug, message, client, urlSuffix,
             }
             client.logger.error(`Fetching page to snapshot failed with status ${e.message} (${URL})`);
             if (failIndex > -1) {
-                failed.slice(failIndex, 1);
-                await message.reply(`Querying ally code ${code} has failed too many times. Please manually scrape this user and try again`);
+                failed.splice(failIndex, 1);
+                await message.reply(`Querying ally code ${code} has failed too many times. Please try again in a few minutes`);
                 continue;
             }
             failed.push(code);
@@ -187,7 +187,7 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, asEm
         await reallyDoSnap(URL, message.channel, combinedID, asEmbed);
 
         if (failIndex > -1) {
-            failed.slice(failIndex, 1);
+            failed.splice(failIndex, 1);
         }
     } catch (e) {
         if (e instanceof PageError) {
@@ -199,8 +199,8 @@ const snapReplyForGuilds = async (guild1, guild2, urlSlug, message, client, asEm
         }
         client.logger.error(`Fetching page to snapshot failed with status ${e.message} (${URL})`);
         if (failIndex > -1) {
-            failed.slice(failIndex, 1);
-            await message.reply(`Querying guilds ${guild1} + ${guild2} has failed too many times. Please manually scrape this user and try again`);
+            failed.splice(failIndex, 1);
+            await message.reply(`Querying guilds ${guild1} + ${guild2} has failed too many times. Please try again in a few minutes`);
             return;
         }
         failed.push(combinedID);
@@ -238,7 +238,7 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
         await reallyDoSnap(URL, message.channel, nameOverride || codes.join('_vs_'), asEmbed);
 
         if (failIndex > -1) {
-            failed.slice(failIndex, 1);
+            failed.splice(failIndex, 1);
         }
     } catch (e) {
         if (e instanceof PageError) {
@@ -250,8 +250,8 @@ const snapReplyForCompare = async (codes, urlSlug, message, client, queryParamet
         }
         client.logger.error(`Fetching page to snapshot failed with status "${e.message}" (${URL})`);
         if (failIndex > -1) {
-            failed.slice(failIndex, 1);
-            await message.reply(`Querying has failed too many times. Please manually scrape these users and try again`);
+            failed.splice(failIndex, 1);
+            await message.reply(`Querying has failed too many times. Please try again in a few minutes`);
             return;
         }
         failed.push(codeList);
