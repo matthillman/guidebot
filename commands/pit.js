@@ -153,7 +153,7 @@ exports.run = async (client, message, [command, ...args]) => {
         if (!newPitBossRole) {
             await message.reply(`Looked for boss role "${newRoleSearch}", but I didn't find a role with that name. You must define a boss role before you can use this feature.`);
         } else {
-            client.setting.setProp(message.channel.id, 'bossRole', newPitBossRole.name);
+            client.settings.setProp(message.channel.id, 'bossRole', newPitBossRole.name);
             await message.reply(`🐗 bossRole updated to <@&${newPitBossRole.id}">`);
         }
 
@@ -164,7 +164,7 @@ exports.run = async (client, message, [command, ...args]) => {
         const amount = parseFloat(args[0]);
 
         if (amount > 0) {
-            client.setting.setProp(message.channel.id, 'postThreshold', amount);
+            client.settings.setProp(message.channel.id, 'postThreshold', amount);
             await message.reply(`🐗 Post threshold notification updated to ${amount}%`);
         } else {
             return await message.reply(`🐗🛑 "${args[0]}" doesn't parse as a number. Please try again`);
