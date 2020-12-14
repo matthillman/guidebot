@@ -205,7 +205,7 @@ ${settings.holding.reduce((c, m) => `${c}${`${m.amount}`.padStart(3)}%: ${m.name
             return await message.reply(`🐗🚨 You don't have permission to do this, you need ${pitBossMention}`);
         }
 
-        if (settings.holding.length) {
+        if (settings.holding.length && !args[0] !== 'force') {
             return await message.reply(`🐗 Hey… ${settings.holding.length} members claim to be holding damage. If you _really_ want to abort, run "close force". Else run "post" to call for damage.`);
         }
 
