@@ -154,7 +154,7 @@ exports.run = async (client, message, [command, ...args]) => {
             await message.reply(`Looked for boss role "${newRoleSearch}", but I didn't find a role with that name. You must define a boss role before you can use this feature.`);
         } else {
             client.settings.setProp(message.channel.id, 'bossRole', newPitBossRole.name);
-            await message.reply(`🐗 bossRole updated to <@&${newPitBossRole.id}">`);
+            await message.reply(`🐗 bossRole updated to <@&${newPitBossRole.id}>`);
         }
 
     } else if (command === 'setpostthreshold') {
