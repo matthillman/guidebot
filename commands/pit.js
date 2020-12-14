@@ -111,6 +111,9 @@ exports.run = async (client, message, [command, ...args]) => {
 
         return await message.channel.send(`🐗 ${pitBossMention} Post message sent for phase ${currentPhase}. You can now open the next phase.`);
     } else if (command === 'hold' || command === 'holding' || command === 'h') {
+        if (currentPhase === 0) {
+            return await message.reply(`🐗🛑 Pit is not currently running. Please use "open" to start a run`)
+        }
         const amount = parseFloat(args[0]);
 
         if (amount > 0) {
@@ -125,11 +128,15 @@ exports.run = async (client, message, [command, ...args]) => {
                     amount: amount
                 });
             }
-
-            await message.react('🐗');
+        } else if (amount === 0) {
+            if (memberIndex >= 0) {
+                settings.holding.splice(memberIndex, 1);
+            }
         } else {
             return await message.reply(`🐗🛑 "${args[0]}" doesn't parse as a number. Please try again`);
         }
+
+        await message.react('🐗');
 
         const total = settings.holding.reduce((tot, cur) => tot + cur.amount, 0);
 
@@ -197,9 +204,6 @@ ${settings.holding.reduce((c, m) => `${c}${`${m.amount}`.padStart(3)}%: ${m.name
         if (!isBoss) {
             return await message.reply(`🐗🚨 You don't have permission to do this, you need ${pitBossMention}`);
         }
-        if (currentPhase === 0) {
-            return await message.reply(`🐗🛑 Pit is not currently running and thus can't be closed 🙈`);
-        }
 
         if (settings.holding.length) {
             return await message.reply(`🐗 Hey… ${settings.holding.length} members claim to be holding damage. If you _really_ want to abort, run "close force". Else run "post" to call for damage.`);
@@ -214,6 +218,8 @@ ${settings.holding.reduce((c, m) => `${c}${`${m.amount}`.padStart(3)}%: ${m.name
 For everyone:
 hold <amount> (holding|h)
     Indicate that you are holding amount% damage and are awaiting orders
+    Run again to update your amount
+    Run with 0 to indicate you are no longer holding and need to cancel
 status
     Get a pretty status of who is patiently holding damage
 
