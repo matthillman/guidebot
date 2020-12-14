@@ -210,6 +210,7 @@ ${settings.holding.reduce((c, m) => `${c}${`${m.amount}`.padStart(3)}%: ${m.name
         }
 
         client.settings.setProp(message.channel.id, 'phase', 0);
+        client.settings.setProp(message.channel.id, 'holding', []);
 
         await message.channel.send(`🐗 ${pitBossMention} Pit is closed!`);
     } else {
