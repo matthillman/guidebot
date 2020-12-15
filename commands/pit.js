@@ -119,8 +119,9 @@ exports.run = async (client, message, [command, ...args]) => {
         }
 
         const total = settings.holding.reduce((tot, cur) => tot + cur.amount, 0);
+        const gap = 100 - amount;
 
-        if (total >= amount) {
+        if (total >= (settings.postThreshold - gap)) {
             await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total}% damage! Time to post!`);
         }
     } else if (['post', 'p'].includes(command)) {
@@ -168,11 +169,14 @@ exports.run = async (client, message, [command, ...args]) => {
             return await message.reply(`🐗🛑 "${args[0]}" doesn't parse as a number. Please try again`);
         }
 
+        client.settings.setProp(message.channel.id, 'holding', settings.holding);
+
         await message.react('🐗');
 
         const total = settings.holding.reduce((tot, cur) => tot + cur.amount, 0);
+        const gap = 100 - settings.starting;
 
-        if (total >= settings.postThreshold) {
+        if (total >= (settings.postThreshold - gap)) {
             await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total}% damage! Time to post!`);
         }
     } else if (command === 'setrole') {
@@ -203,8 +207,9 @@ exports.run = async (client, message, [command, ...args]) => {
         }
 
         const total = settings.holding.reduce((tot, cur) => tot + cur.amount, 0);
+        const gap = 100 - settings.starting;
 
-        if (total >= amount) {
+        if (total >= (amount - gap)) {
             await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total}% damage! Time to post!`);
         }
     } else if (['status', 's'].includes(command)) {
@@ -214,7 +219,6 @@ exports.run = async (client, message, [command, ...args]) => {
 
         const total = settings.holding.reduce((tot, cur) => tot + cur.amount, 0);
         const memberCount = settings.holding.length;
-        console.log(settings);
 
         await message.channel.send({
             embed: {
