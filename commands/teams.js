@@ -32,7 +32,11 @@ ${teamList.reduce((prev, team) => `${prev}${team.value}${' '.repeat(10 - team.va
 
     team = team.toLowerCase();
 
-    if (!teamList.map(team => team.value).includes(team) && team !== 'mods') {
+    teamAsInt = parseInt(team);
+
+    if (Number.isNaN(teamAsInt)) { teamAsInt = 0; }
+
+    if (!teamList.map(team => team.value).includes(team) && team !== 'mods' && teamAsInt < 1) {
         return message.reply(`${team} is not a valid team key`);
     }
 
