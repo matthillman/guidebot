@@ -1,12 +1,15 @@
-const { set } = require("lodash");
-
+const parseIntDefault = (numberish, def) => {
+    const parsed = parseInt(numberish);
+    return Number.isNaN(parsed) ? (def || 0) : parsed;
+}
 
 const getSettings = (client, channel) => {
     const def = {
         phase: 0,
         holding: [],
         bossRole: "Pit Boss",
-        postThreshold: 105
+        postThreshold: 105,
+        starting: 100
     };
     if (!channel) return def;
     const returns = {};
@@ -57,15 +60,19 @@ exports.run = async (client, message, [command, ...args]) => {
             }
         ]
         bossRole: string
+        postThreshold: 105
+        starting: 100
     }
     */
 
-    if (command === 'open' || command === 'o' || command === 'next' || command === 'n') {
+    if (['open', 'o', 'next', 'n'].includes(command)) {
         if (!isBoss) {
             return await message.reply(`🐗🚨 You don't have permission to do this, you need ${pitBossMention}`);
         }
 
-        if ((command === 'next' || command === 'n') && currentPhase === 0) {
+        const commandIsNext = command === 'next' || command === 'n';
+
+        if (commandIsNext && currentPhase === 0) {
             return await message.reply(`🐗🛑 Pit is not currently running. Please use "open" to start a run`)
         }
 
@@ -73,7 +80,10 @@ exports.run = async (client, message, [command, ...args]) => {
             return await message.reply(`🐗💥 Members are still holding damage. Please signal everyone with "post" before changing phases.`);
         }
 
-        let nextPhase = parseInt(args[0] || (currentPhase + 1));
+        const nextPhaseArg = commandIsNext ? null : parseInt(args[0]);
+        const startingPercentArg = parseIntDefault(commandIsNext ? args[0] : args[1], 100);
+
+        let nextPhase = parseIntDefault(nextPhaseArg, currentPhase + 1);
         if (nextPhase > 4) {
             nextPhase = 0;
 
@@ -81,17 +91,39 @@ exports.run = async (client, message, [command, ...args]) => {
         }
 
         client.settings.setProp(message.channel.id, 'phase', nextPhase);
+        client.settings.setProp(message.channel.id, 'starting', startingPercentArg);
         let response = '';
         if (currentPhase > 0) {
             response += `🐗 ${pitBossMention} Phase ${currentPhase} complete!\n\n`;
         }
         if (nextPhase > 0) {
-            response += `🐗 ${pitBossMention} Phase ${nextPhase} now open and ready for damage`;
+            response += `🐗 ${pitBossMention} Phase ${nextPhase} now open and ready for damage (starting at ${startingPercentArg}%)`;
         }
         if (response.length) {
             await message.channel.send(response);
         }
-    } else if (command === 'post' || command === 'p') {
+    } else if (['starting', 'start', 'st'].includes(command)) {
+        if (!isBoss) {
+            return await message.reply(`🐗🚨 You don't have permission to do this, you need ${pitBossMention}`);
+        }
+        if (currentPhase === 0) {
+            return await message.reply(`🐗🛑 Pit is not currently running. Please use "open" to start a run`)
+        }
+        const amount = parseFloat(args[0]);
+
+        if (!Number.isNaN(amount)) {
+            client.settings.setProp(message.channel.id, 'starting', amount);
+            await message.reply(`🐗 Start percent for phase ${currentPhase} updated to ${amount}%`);
+        } else {
+            return await message.reply(`🐗🛑 "${args[0]}" doesn't parse as a number. Please try again`);
+        }
+
+        const total = settings.holding.reduce((tot, cur) => tot + cur.amount, 0);
+
+        if (total >= amount) {
+            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total}% damage! Time to post!`);
+        }
+    } else if (['post', 'p'].includes(command)) {
         if (!isBoss) {
             return await message.reply(`🐗🚨 You don't have permission to do this, you need ${pitBossMention}`);
         }
@@ -110,15 +142,15 @@ exports.run = async (client, message, [command, ...args]) => {
         client.settings.setProp(message.channel.id, 'holding', []);
 
         return await message.channel.send(`🐗 ${pitBossMention} Post message sent for phase ${currentPhase}. You can now open the next phase.`);
-    } else if (command === 'hold' || command === 'holding' || command === 'h') {
+    } else if (['hold', 'holding', 'h'].includes(command)) {
         if (currentPhase === 0) {
             return await message.reply(`🐗🛑 Pit is not currently running. Please use "open" to start a run`)
         }
+
         const amount = parseFloat(args[0]);
+        const memberIndex = settings.holding.findIndex(m => m.id === message.author.id);
 
         if (amount > 0) {
-            const memberIndex = settings.holding.findIndex(m => m.id === message.author.id);
-
             if (memberIndex >= 0) {
                 settings.holding[memberIndex].amount = amount;
             } else {
@@ -175,18 +207,20 @@ exports.run = async (client, message, [command, ...args]) => {
         if (total >= amount) {
             await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total}% damage! Time to post!`);
         }
-    } else if (command === 'status' || command === 's') {
+    } else if (['status', 's'].includes(command)) {
         if (currentPhase === 0) {
             return await message.reply(`🐗🛑 Pit is not currently running. Please use "open" to start a run`)
         }
 
         const total = settings.holding.reduce((tot, cur) => tot + cur.amount, 0);
         const memberCount = settings.holding.length;
+        console.log(settings);
 
         await message.channel.send({
             embed: {
                 title : `Challenge Rancor: Phase ${currentPhase} Summary`,
-                description: `${memberCount} members holding ${total}% damage
+                description: `${memberCount} members holding **${total}%** damage
+Boss health level at **${settings.starting}%**
 \`\`\`
 ${settings.holding.reduce((c, m) => `${c}${`${m.amount}`.padStart(3)}%: ${m.name}\n`, '')}
 \`\`\``,
@@ -221,14 +255,18 @@ hold <amount> (holding|h)
     Indicate that you are holding amount% damage and are awaiting orders
     Run again to update your amount
     Run with 0 to indicate you are no longer holding and need to cancel
-status
+status (s)
     Get a pretty status of who is patiently holding damage
 
 For @${pitBossRole.name}:
-open <phase> (o)
+open <phase> <starting> (o)
     Mark a phase as open for damage
-next (n)
+    Set the current % to <starting>
+next <starting> (n)
     Move to the next phase
+    Set the current % to <starting>
+starting <amount> (start|st)
+    Set the current % to <starting> for the current phase
 close
     Mark the raid as over
 post (p)
