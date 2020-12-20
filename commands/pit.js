@@ -176,6 +176,8 @@ exports.run = async (client, message, [command, ...args]) => {
         const total = settings.holding.reduce((tot, cur) => tot + cur.amount, 0);
         const gap = 100 - settings.starting;
 
+        client.logger.log(`${pitBossMention}${currentPhase} : ${total} >= (${settings.postThreshold} - (100 - ${settings.starting})) [${settings.postThreshold - gap}]`);
+
         if (total >= (settings.postThreshold - gap)) {
             await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total}% damage! Time to post!`);
         }
@@ -225,6 +227,7 @@ exports.run = async (client, message, [command, ...args]) => {
                 title : `Challenge Rancor: Phase ${currentPhase} Summary`,
                 description: `${memberCount} members holding **${total}%** damage
 Boss health level at **${settings.starting}%**
+Posting damage at **${settings.postThreshold - (100 - settings.starting)}%**
 \`\`\`
 ${settings.holding.reduce((c, m) => `${c}${`${m.amount}`.padStart(3)}%: ${m.name}\n`, '')}
 \`\`\``,
