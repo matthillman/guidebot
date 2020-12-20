@@ -185,7 +185,7 @@ exports.run = async (client, message, [command, ...args]) => {
         if (message.author.permLevel < 3) {
             return await message.reply(`🐗🚨 You don't have permission to do this, you need an Admin`);
         }
-        const newRoleSearch = (args[0] || "Pit Boss").toLowerCase();
+        const newRoleSearch = (args.join(' ') || "Pit Boss").toLowerCase();
         const newPitBossRole = message.guild.roles.find(r => r.name.toLowerCase() === newRoleSearch);
 
         if (!newPitBossRole) {
