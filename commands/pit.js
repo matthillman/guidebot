@@ -179,7 +179,7 @@ exports.run = async (client, message, [command, ...args]) => {
         client.logger.log(`${pitBossMention}${currentPhase} : ${total} >= (${settings.postThreshold} - (100 - ${settings.starting})) [${settings.postThreshold - gap}]`);
 
         if (total >= (settings.postThreshold - gap)) {
-            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total}% damage! Time to post!`);
+            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total.toFixed(2)}% damage! Time to post!`);
         }
     } else if (command === 'setrole') {
         if (message.author.permLevel < 3) {
@@ -212,7 +212,7 @@ exports.run = async (client, message, [command, ...args]) => {
         const gap = 100 - settings.starting;
 
         if (total >= (amount - gap)) {
-            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total}% damage! Time to post!`);
+            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total.toFixed(2)}% damage! Time to post!`);
         }
     } else if (['status', 's'].includes(command)) {
         if (currentPhase === 0) {
@@ -225,11 +225,11 @@ exports.run = async (client, message, [command, ...args]) => {
         await message.channel.send({
             embed: {
                 title : `Challenge Rancor: Phase ${currentPhase} Summary`,
-                description: `${memberCount} members holding **${total}%** damage
+                description: `${memberCount} members holding **${total.toFixed(2)}%** damage
 Boss health level at **${settings.starting}%**
 Posting damage at **${settings.postThreshold - (100 - settings.starting)}%**
 \`\`\`
-${settings.holding.reduce((c, m) => `${c}${`${m.amount}`.padStart(3)}%: ${m.name}\n`, '')}
+${settings.holding.reduce((c, m) => `${c}${`${m.amount.toFixed(2)}`.padStart(5)}%: ${m.name}\n`, '')}
 \`\`\``,
                 color: 0xfce34d,
                 footer: {
