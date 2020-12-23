@@ -34,7 +34,7 @@ exports.run = async (client, message, [command, ...args]) => {
     const settings = message.settings = getSettings(client, message.channel);
     const roleSearch = (settings.bossRole || "Pit Boss").toLowerCase();
     const pitBossRole = message.guild.roles.find(r => r.name.toLowerCase() === roleSearch);
-    const adminRole = message.guild.roles.find(r => r.name.toLowerCase() === message.settings.adminRole.toLowerCase());
+    const adminRole = message.guild.roles.find(r => r.name.toLowerCase() === "Schwartz Bot Moderator");
 
     if (command !== 'setrole' && !pitBossRole) {
         await message.reply(`Looked for boss role "${settings.bossRole || "Pit Boss"}", but I didn't find a role with that name. You must define a boss role before you can use this feature.`);
