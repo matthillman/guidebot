@@ -34,13 +34,13 @@ exports.run = async (client, message, [command, ...args]) => {
     const settings = message.settings = getSettings(client, message.channel);
     const roleSearch = (settings.bossRole || "Pit Boss").toLowerCase();
     const pitBossRole = message.guild.roles.find(r => r.name.toLowerCase() === roleSearch);
-    const adminRole = message.guild.roles.find(r => r.name.toLowerCase() === "Schwartz Bot Moderator");
+    const adminRole = "Schwartz Bot Moderator";// message.guild.roles.find(r => r.name.toLowerCase() === "Schwartz Bot Moderator");
 
     if (command !== 'setrole' && !pitBossRole) {
         await message.reply(`Looked for boss role "${settings.bossRole || "Pit Boss"}", but I didn't find a role with that name. You must define a boss role before you can use this feature.`);
     }
     const pitBossMention = pitBossRole ?`<@&${pitBossRole.id}>: ` : '';
-    const adminMention = `<@&${adminRole.id}>`;
+    const adminMention = "Schwartz Bot Moderator"; //`<@&${adminRole.id}>`;
     const isBoss = pitBossRole && message.member.roles.has(pitBossRole.id);
     const currentPhase = settings.phase || 0;
 
@@ -281,7 +281,7 @@ close
 post (p)
     Signal all members who are holding to post damage
 
-@${adminRole.name}:
+@${adminRole}:
 setRole
     Set the pit boss role
     currently: "${pitBossRole.name}"
