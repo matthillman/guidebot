@@ -34,11 +34,13 @@ exports.run = async (client, message, [command, ...args]) => {
     const settings = message.settings = getSettings(client, message.channel);
     const roleSearch = (settings.bossRole || "Pit Boss").toLowerCase();
     const pitBossRole = message.guild.roles.find(r => r.name.toLowerCase() === roleSearch);
+    const adminRole = message.guild.roles.find(r => r.name.toLowerCase() === message.settings.adminRole.toLowerCase());
 
     if (command !== 'setrole' && !pitBossRole) {
         await message.reply(`Looked for boss role "${settings.bossRole || "Pit Boss"}", but I didn't find a role with that name. You must define a boss role before you can use this feature.`);
     }
     const pitBossMention = pitBossRole ?`<@&${pitBossRole.id}>: ` : '';
+    const adminMention = `<@&${adminRole.id}>`;
     const isBoss = pitBossRole && message.member.roles.has(pitBossRole.id);
     const currentPhase = settings.phase || 0;
 
@@ -122,7 +124,7 @@ exports.run = async (client, message, [command, ...args]) => {
         const gap = 100 - amount;
 
         if (total >= (settings.postThreshold - gap)) {
-            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total}% damage! Time to post!`);
+            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total}% damage! Post threshold reached!`);
         }
     } else if (['post', 'p'].includes(command)) {
         if (!isBoss) {
@@ -179,11 +181,11 @@ exports.run = async (client, message, [command, ...args]) => {
         client.logger.log(`${pitBossMention}${currentPhase} : ${total} >= (${settings.postThreshold} - (100 - ${settings.starting})) [${settings.postThreshold - gap}]`);
 
         if (total >= (settings.postThreshold - gap)) {
-            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total.toFixed(2)}% damage! Time to post!`);
+            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total.toFixed(2)}% damage! Post threshold reached!`);
         }
     } else if (command === 'setrole') {
         if (message.author.permLevel < 3) {
-            return await message.reply(`🐗🚨 You don't have permission to do this, you need an Admin`);
+            return await message.reply(`🐗🚨 You don't have permission to do this, you need ${adminMention}`);
         }
         const newRoleSearch = (args.join(' ') || "Pit Boss").toLowerCase();
         const newPitBossRole = message.guild.roles.find(r => r.name.toLowerCase() === newRoleSearch);
@@ -212,7 +214,7 @@ exports.run = async (client, message, [command, ...args]) => {
         const gap = 100 - settings.starting;
 
         if (total >= (amount - gap)) {
-            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total.toFixed(2)}% damage! Time to post!`);
+            await message.channel.send(`${pitBossMention}${currentPhase} is loaded with ${total.toFixed(2)}% damage! Post threshold reached!`);
         }
     } else if (['status', 's'].includes(command)) {
         if (currentPhase === 0) {
@@ -227,7 +229,7 @@ exports.run = async (client, message, [command, ...args]) => {
                 title : `Challenge Rancor: Phase ${currentPhase} Summary`,
                 description: `${memberCount} members holding **${total.toFixed(2)}%** damage
 Boss health level at **${settings.starting}%**
-Posting damage at **${settings.postThreshold - (100 - settings.starting)}%**
+Posting damage at **${(settings.postThreshold - (100 - settings.starting)).toFixed(2)}%**
 \`\`\`
 ${settings.holding.reduce((c, m) => `${c}${`${m.amount.toFixed(2)}`.padStart(5)}%: ${m.name}\n`, '')}
 \`\`\``,
@@ -257,7 +259,7 @@ ${settings.holding.reduce((c, m) => `${c}${`${m.amount.toFixed(2)}`.padStart(5)}
     } else {
         await message.channel.send(`Commands:
 \`\`\`
-For everyone:
+For everyone [command <argument> (alias)]:
 hold <amount> (holding|h)
     Indicate that you are holding amount% damage and are awaiting orders
     Run again to update your amount
@@ -279,7 +281,7 @@ close
 post (p)
     Signal all members who are holding to post damage
 
-Admin:
+@${adminRole.name}:
 setRole
     Set the pit boss role
     currently: "${pitBossRole.name}"
