@@ -226,12 +226,14 @@ exports.run = async (client, message, [command, ...args]) => {
         const total = settings.holding.reduce((tot, cur) => tot + cur.amount, 0);
         const memberCount = settings.holding.length;
 
+        const damagePostedAt = settings.postThreshold - (100 - settings.starting);
         await message.channel.send({
             embed: {
                 title : `Challenge Rancor: Phase ${currentPhase} Summary`,
                 description: `${memberCount} members holding **${total.toFixed(2)}%** damage
 Boss health level at **${settings.starting}%**
-Posting damage at **${(settings.postThreshold - (100 - settings.starting)).toFixed(2)}%**
+Posting damage at **${damagePostedAt.toFixed(2)}%**
+Damage needed: **${(damagePostedAt - total).toFixed(2)}%**
 \`\`\`
 ${settings.holding.reduce((c, m) => `${c}${`${m.amount.toFixed(2)}`.padStart(5)}%: ${m.name}\n`, '')}
 \`\`\``,
